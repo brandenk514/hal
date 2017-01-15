@@ -5,9 +5,6 @@ import unicodedata
 
 recognizer = speech_recognition.Recognizer()
 
-name = "Branden"
-
-
 def speak(text):
     system("Say " + text)
 
@@ -21,10 +18,8 @@ def ping(ip):
 
 
 def parse(audio):
-    print(audio)
     sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
     words = re.sub('[^\w]', " ", sentence).split()
-    print(words)
     return words
 
 
@@ -39,11 +34,9 @@ def listen():
         print("Could not understand audio")
     except speech_recognition.RequestError as e:
         print("Recognition Error; {0}".format(e))
-    except speech_recognition.WaitTimeoutError:
-        print("Are you there?")
 
     return ""
 
 
 if __name__ == '__main__':
-    parse(listen())
+    print(parse(listen()))
