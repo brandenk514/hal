@@ -1,6 +1,7 @@
 import speech_recognition
 from os import system
-from array import array
+import re
+import unicodedata
 
 recognizer = speech_recognition.Recognizer()
 
@@ -20,15 +21,11 @@ def ping(ip):
 
 
 def parse(audio):
-    words = array('i')
-    print(type(words))
     print(audio)
-    print(len(audio))
-    for a in range(len(audio)):
-        if a != " ":
-            words.remove('i')
-            words.insert(0, a)
+    sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
+    words = re.sub('[^\w]', " ", sentence).split()
     print(words)
+    return words
 
 
 def listen():
