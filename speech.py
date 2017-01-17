@@ -18,7 +18,7 @@ def index_directory(directory):
 
 
 def open_app(application):
-    selected_app = application.capitalize()
+    selected_app = application.capitalize() + ".app"
     directory = "/Applications/"
     apps = index_directory(directory)
     folders = []
@@ -26,11 +26,11 @@ def open_app(application):
         if not a.endswith(".app"):
             folders.append(a)
             apps.remove(a)
-
     if selected_app in apps:
-        system("Open " + directory + selected_app + ".app")
+        system("Open " + directory + selected_app)
         return None
     else:
+        selected_app = application.capitalize()
         if selected_app in folders:
             select_dir = index_directory(directory + selected_app)
             cur = selected_app + ".app"
@@ -67,4 +67,4 @@ def listen():
 
 
 if __name__ == '__main__':
-    open_app('Cisco')
+    open_app('Safari')
