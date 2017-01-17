@@ -1,6 +1,7 @@
 import os
 from os import system
 
+# A class for internal operations on the computer
 
 class SystemOS:
 
