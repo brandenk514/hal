@@ -7,6 +7,11 @@ class Wit:
     def __init__(self, api_key):
         self.api_key = api_key
 
+    """
+    :param self, This is a wrapper method to the Speech_Recognition package
+    found @ https://gist.github.com/GGulati/1ebaeaaa7f7408647fef#file-jarvis-py
+    """
+
     def listen(self):
         recognizer = speech_recognition.Recognizer()
         with speech_recognition.Microphone() as source:
@@ -21,6 +26,10 @@ class Wit:
 
         return ""
 
+    """
+    :param self, audio source -> usually a phrase
+    :return an array of words
+    """
     def parse(self, audio):
         sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
         words = re.sub('[^\w]', " ", sentence).split()
