@@ -1,5 +1,7 @@
 import os
 from os import system
+import subprocess as sub
+import re
 
 
 # A class for internal operations on the computer
@@ -34,42 +36,48 @@ class SystemOS:
         app_list.sort()
         return app_list
 
+    @staticmethod
+    def correct_input(input_text):
+        final = []
+        words = re.sub('[^\w]', " ", input_text).split()
+        for w in words:
+            final.append(w.capitalize())
+        return ' '.join(final)
+
     """
     :param self, String: application -> application you want to open
     commands system to open application if found in directory
     :return None
     """
-
     def open_app(self, application):
-        selected_app = application.capitalize() + ".app"
+        selected_app = self.correct_input(application) + ".app"
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
         utilities = self.utilities
-        print(selected_app)
-        print(utilities)
         if selected_app in apps:
-            print("t")
-            system("Open " + directory + selected_app)
+            sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
             return None
-        if selected_app in utilities:
-            print("e")
-            system("Open " + directory + "Utilities/" + selected_app)
+        elif selected_app in utilities:
+            sub.call(["/usr/bin/open", "-n", "-a", directory + "Utilities/" + selected_app])
             return None
         else:
-            selected_app = application.capitalize()
+            selected_app = self.correct_input(application)
             if selected_app in folders:
                 select_dir = self.index_directory(directory + selected_app)
                 cur = selected_app + ".app"
                 if cur in select_dir:
-                    system("Open " + directory + selected_app + "/" + cur)
+                    sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app + "/" + cur])
                     return None
                 else:
-                    print("Application not found")
+                    print("Application not found... Opening folder")
+                    sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
                     return None
+            elif selected_app in utilities:
+                print("Folder found, but application executable is missing")
+                return None
             else:
-                system("Open " + directory + selected_app)
-                print("Application not found... Opening Folder")
+                print("Application not found")
                 return None
 
     """
