@@ -18,7 +18,7 @@ class Wit:
             recognizer.adjust_for_ambient_noise(source)
             audio = recognizer.listen(source, 5)
         try:
-            return recognizer.recognize_wit(audio, "PYEBZJDFJJTY7J6RN4CVFWTO7DLYK5Y6")
+            return recognizer.recognize_wit(audio, self.api_key)
         except speech_recognition.UnknownValueError:
             print("Could not understand audio")
         except speech_recognition.RequestError as e:

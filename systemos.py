@@ -2,12 +2,12 @@ import os
 from os import system
 import subprocess as sub
 import re
+import random
 
 
 # A class for internal operations on the computer
 
 class SystemOS:
-
     def __init__(self, name):
         self.name = name
         self.apps = self.index_directory("/Applications/")  # Index folders on startup
@@ -17,6 +17,7 @@ class SystemOS:
             if not a.endswith(".app"):  # Sort between .app and folders
                 self.folders.append(a)
                 self.apps.remove(a)
+
     """
     :param self, String: text
     call to system to say text via macOS
@@ -24,6 +25,17 @@ class SystemOS:
 
     def speak(self, text):
         system("Say " + text)
+
+    def sayHello(self):
+        greetings = {
+            0: "How can I help you?",
+            1: "Hello, nice to you",
+            2: "Good Morning",
+            3: "Good Afternoon",
+            4: "Good Evening"
+        }
+        n = random.randrange(0, len(greetings), 1)
+        self.speak(greetings[n])
 
     """
     :param self, String: directory -> path to directory
@@ -49,6 +61,7 @@ class SystemOS:
     commands system to open application if found in directory
     :return None
     """
+
     def open_app(self, application):
         selected_app = self.correct_input(application) + ".app"
         directory = "/Applications/"
