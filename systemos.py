@@ -2,14 +2,19 @@ import os
 from os import system
 import subprocess as sub
 import re
-import random
+import current_Date_Time
+from gui import HalGui
 
 
 # A class for internal operations on the computer
 
 class SystemOS:
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, user_name):
+        self.user_name = user_name
+        self.name = "Hal"
+        self.gui = HalGui()
+        self.is_active = True
+        self.time = current_Date_Time.Current_Date_Time()
         self.apps = self.index_directory("/Applications/")  # Index folders on startup
         self.folders = []
         self.utilities = self.index_directory("/Applications/Utilities/")
@@ -27,15 +32,15 @@ class SystemOS:
         system("Say " + text)
 
     def sayHello(self):
-        greetings = {
-            0: "How can I help you?",
-            1: "Hello, nice to you",
-            2: "Good Morning",
-            3: "Good Afternoon",
-            4: "Good Evening"
-        }
-        n = random.randrange(0, len(greetings), 1)
-        self.speak(greetings[n])
+        greeting = "How can I help you"
+        if self.time.is_morning():
+            self.speak("Good Morning, " + greeting)
+        elif self.time.is_afternoon():
+            self.speak("Good Afternoon, " + greeting)
+        elif self.time.is_evening():
+            self.speak("Good Evening, " + greeting)
+        else:
+            self.speak("Up late tonight?")
 
     """
     :param self, String: directory -> path to directory
@@ -47,6 +52,10 @@ class SystemOS:
         app_list = os.listdir(directory)
         app_list.sort()
         return app_list
+
+    """
+    :param self, String: app_name -> return a string with proper capitalization for application search
+    """
 
     @staticmethod
     def correct_input(input_text):
@@ -98,5 +107,6 @@ class SystemOS:
     commands system to ping an IP
     """
 
-    def ping(self, ip):
-        system("Ping " + ip)
+    def ping(self, hostname):
+        host = "www." + hostname + ".com"
+        return system("ping -c 1 " + host)
