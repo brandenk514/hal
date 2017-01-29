@@ -34,3 +34,6 @@ class Wit:
         sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
         words = re.sub('[^\w]', " ", sentence).split()
         return words
+
+    def to_sentence(self, audio):
+        return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
