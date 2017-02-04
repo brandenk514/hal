@@ -16,14 +16,15 @@ class Wit:
         recognizer = speech_recognition.Recognizer()
         with speech_recognition.Microphone() as source:
             recognizer.adjust_for_ambient_noise(source)
-            audio = recognizer.listen(source, 5)
+            audio = recognizer.listen(source, 10)
         try:
             return recognizer.recognize_wit(audio, self.api_key)
         except speech_recognition.UnknownValueError:
             print("Could not understand audio")
         except speech_recognition.RequestError as e:
             print("Recognition Error: {0}".format(e))
-
+        except speech_recognition.WaitTimeoutError:
+            print("I couldn't hear you.")
         return ""
 
     """
@@ -36,4 +37,6 @@ class Wit:
         return words
 
     def to_sentence(self, audio):
-        return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
+        sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
+        words = re.sub('[^\w]', " ", sentence).split()
+        return ' '.join(words)

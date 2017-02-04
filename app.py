@@ -7,43 +7,39 @@ import tkinter
 class App:
     def __init__(self):
         self.hal = systemos.SystemOS("Branden")
-        self.wit = wit.Wit("")
-        self.phrase = ""
+        self.wit = wit.Wit("L4CGFDK5S3LYRJVTY2B6LVII5GRF5TZO")
+        self.phrase = "Hello, my name is Hal. How can I help you?"
+        self.window = tkinter.Tk()
+        self.frame = tkinter.Frame(self.window, bg="black", height=50)
+        self.text = tkinter.Label(self.frame, bg="black", fg="green", height=5)
 
-    def build(self):
-
+    def run(self):
         # Set up the window
-        window = tkinter.Tk()
-        window.minsize(width=300, height=500)
-        window.maxsize(width=300, height=500)
-
-        # add a frame to manage widgets in window
-        frame = tkinter.Frame(window, bg="black", height=50)
+        self.window.title = "HAL"
+        self.window.wm_title = "HAL"
+        self.window.minsize(width=300, height=500)
+        self.window.maxsize(width=300, height=500)
 
         # canvas for hal image
-        canvas = tkinter.Canvas(window, bg="black", height=350, bd=0)
+        canvas = tkinter.Canvas(self.window, bg="black", height=350, bd=0)
         canvas.create_oval(100, 125, 200, 225, fill="red")
 
         # add widgets
-        listen_button = tkinter.Button(frame, text="Press to speak to HAL", bg="black", command=self.listening)
-
-        text_list = tkinter.Listbox(frame, fg="green", bg="black", height=5, selectbackground="black",
-                                    selectmode="single")
-        text_list.insert("end", self.phrase)
+        listen_button = tkinter.Button(self.frame, text="Press to speak to HAL", bg="black", command=self.listening)
 
         # pack into the frame
-        text_list.pack(side="top", fill="both")
+        self.text.pack(side="top", fill="both")
         listen_button.pack(side="bottom", fill='x')
         canvas.pack(side="top", fill="both", expand=True)
-        frame.pack(side="bottom", fill="both")
-        return window
+        self.frame.pack(side="bottom", fill="both")
+        self.window.mainloop()
 
     def listening(self):
-        self.phrase = self.wit.listen()
-        print(self.phrase)
-
-    def run(self):
-        self.build().mainloop()
+        self.phrase = self.wit.to_sentence(self.wit.listen())
+        phrase = tkinter.StringVar()
+        phrase.set(self.phrase)
+        self.text.config(textvariable=phrase)
+        self.window.update()
 
 
 if __name__ == '__main__':
