@@ -12,7 +12,6 @@ class Computer:
     def __init__(self):
         self.user_name = ""
         self.name = "Hal"
-        self.listen = googlespeech.GoogleSpeech()
         self.time = timehelper.TimeHelper()
 
         self.apps = self.index_directory("/Applications/")  # Index folders on startup

@@ -7,6 +7,8 @@ import tkinter
 class App:
     def __init__(self):
         self.hal = computer.Computer()
+        self.speech = googlespeech.GoogleSpeech()
+
         self.phrase = "Hello, my name is Hal. How can I help you?"
         self.window = tkinter.Tk()
         self.frame = tkinter.Frame(self.window, bg="black", height=50)
@@ -36,21 +38,15 @@ class App:
         self.window.mainloop()
 
     def listening(self):
-        self.phrase = self.wit.to_sentence(self.wit.listen())
+        self.phrase = self.speech.to_sentence(self.speech.listen())
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
         self.text.config(textvariable=phrase)
         self.window.update()
-
-    def speech(self):
         self.hal.speak(self.phrase)
 
-"""
+
 if __name__ == '__main__':
     hal = App()
     # hal.hal.open_app("Mail")
     # hal.run()
-"""
-
-
-
