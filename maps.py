@@ -7,6 +7,7 @@ class Map:
     def __init__(self):
         key = os.environ.get('GOOGLE_API_KEY')
         self.map = googlemaps.Client(key=key)
+        self.ip = "50.202.217.173"
 
     def get_location(self, location):
         return self.map.geocode(location)
@@ -16,6 +17,9 @@ class Map:
 
     def get_elevation(self, location):
         return self.map.elevation(location)
+
+    def get_current_location_from_ip(self):
+        return geocoder.ip(self.ip).address
 
     """
     Returns the address in a formatted string, relative to US address system
@@ -49,10 +53,14 @@ class Map:
     def parse_timezone(self, timezone_dict):
         return timezone_dict['timeZoneId']
 
-    def get_current_location_from_ip(self, ip):
-        return geocoder.ip(ip).address
-
+    def parse_location_for_zip(self, location_list):
+        zip_code = ""
+        for l in location_list:
+            zip_code = l['address_components'][7]
+        code = zip_code["long_name"]
+        return code
 
 if __name__ == '__main__':
     m = Map()
+    print(m.parse_location_for_zip(m.get_location("3208 Golden Grove, San Antonio, TX")))
 
