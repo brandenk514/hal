@@ -1,9 +1,12 @@
 import googlemaps
+import geocoder
+import os
 
 
 class Map:
     def __init__(self):
-        self.map = googlemaps.Client(key="AIzaSyDlXhJ5AMfqSqjUbNhjkRsIbCZZQPMTNx8")
+        key = os.environ.get('GOOGLE_API_KEY')
+        self.map = googlemaps.Client(key=key)
 
     def get_location(self, location):
         return self.map.geocode(location)
@@ -34,8 +37,8 @@ class Map:
         for l in location_list:
             coordinates.append(l['geometry']['location']['lat'])  # Latitude
             coordinates.append(l['geometry']['location']['lng'])  # Longitude
-        tuple_coor = tuple(float(c) for c in coordinates)
-        return tuple_coor
+        tuple_coordinates = tuple(float(c) for c in coordinates)
+        return tuple_coordinates
 
     def parse_elevation(self, elevation_list):
         elevation = 0.0
@@ -45,3 +48,11 @@ class Map:
 
     def parse_timezone(self, timezone_dict):
         return timezone_dict['timeZoneId']
+
+    def get_current_location_from_ip(self, ip):
+        return geocoder.ip(ip).address
+
+
+if __name__ == '__main__':
+    m = Map()
+
