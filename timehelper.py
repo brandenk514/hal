@@ -3,7 +3,7 @@ import datetime
 
 # A Class to aid in time related decision by HAL
 
-class Current_Date_Time:
+class TimeHelper:
     def __init__(self):
         self.currentTime = datetime.datetime.now().time()
         self.today = datetime.datetime.now().date()

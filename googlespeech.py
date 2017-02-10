@@ -3,9 +3,9 @@ import re
 import unicodedata
 
 
-class Wit:
-    def __init__(self, api_key):
-        self.api_key = api_key
+class GoogleSpeech:
+    def __init__(self):
+        self.property = ""
 
     """
     :param self, This is a wrapper method to the Speech_Recognition package
@@ -14,25 +14,26 @@ class Wit:
 
     def listen(self):
         recognizer = speech_recognition.Recognizer()
+
         with speech_recognition.Microphone() as source:
             recognizer.adjust_for_ambient_noise(source)
             audio = recognizer.listen(source, 10)
         try:
-            return recognizer.recognize_wit(audio, self.api_key)
+            return recognizer.recognize_google(audio)
         except speech_recognition.UnknownValueError:
-            print("Could not understand audio")
+            return "Could not understand audio"
         except speech_recognition.RequestError as e:
             print("Recognition Error: {0}".format(e))
-        except speech_recognition.WaitTimeoutError:
-            print("I couldn't hear you.")
-        return ""
+            return "Recognition Error: {0}".format(e)
+        except speech_recognition.WaitTimeoutError as e:
+            return "Time Wait out: {0}".format(e)
 
     """
     :param self, audio source -> usually a phrase
     :return an array of words
     """
     def parse(self, audio):
-        sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore')
+        sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
         words = re.sub('[^\w]', " ", sentence).split()
         return words
 

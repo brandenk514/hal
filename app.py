@@ -1,17 +1,18 @@
-import systemos
-import wit
+import computer
+import googlespeech
 import tkinter
 
 
 # This is the main class to run HAL
 class App:
     def __init__(self):
-        self.hal = systemos.SystemOS("Branden")
-        self.wit = wit.Wit("L4CGFDK5S3LYRJVTY2B6LVII5GRF5TZO")
+        self.hal = computer.Computer()
         self.phrase = "Hello, my name is Hal. How can I help you?"
         self.window = tkinter.Tk()
         self.frame = tkinter.Frame(self.window, bg="black", height=50)
-        self.text = tkinter.Label(self.frame, bg="black", fg="green", height=5)
+        phrase = tkinter.StringVar()
+        phrase.set(self.phrase)
+        self.text = tkinter.Label(self.frame, bg="black", fg="green", height=5, textvariable=phrase)
 
     def run(self):
         # Set up the window
@@ -41,7 +42,15 @@ class App:
         self.text.config(textvariable=phrase)
         self.window.update()
 
+    def speech(self):
+        self.hal.speak(self.phrase)
 
+"""
 if __name__ == '__main__':
     hal = App()
-    hal.run()
+    # hal.hal.open_app("Mail")
+    # hal.run()
+"""
+
+
+

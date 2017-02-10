@@ -2,17 +2,19 @@ import os
 from os import system
 import subprocess as sub
 import re
-import current_Date_Time
+import timehelper
+import googlespeech
 
 
 # A class for internal operations on the computer
 
-class SystemOS:
-    def __init__(self, user_name):
-        self.user_name = user_name
+class Computer:
+    def __init__(self):
+        self.user_name = ""
         self.name = "Hal"
-        self.is_active = True
-        self.time = current_Date_Time.Current_Date_Time()
+        self.listen = googlespeech.GoogleSpeech()
+        self.time = timehelper.TimeHelper()
+
         self.apps = self.index_directory("/Applications/")  # Index folders on startup
         self.folders = []
         self.utilities = self.index_directory("/Applications/Utilities/")
