@@ -49,4 +49,4 @@ class App:
 if __name__ == '__main__':
     hal = App()
     # hal.hal.open_app("Mail")
-    # hal.run()
+    hal.run()

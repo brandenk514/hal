@@ -3,20 +3,19 @@ import geocoder
 import os
 
 
-class Map:
+class Location:
     def __init__(self):
-        key = os.environ.get('GOOGLE_API_KEY')
-        self.map = googlemaps.Client(key=key)
-        self.ip = "50.202.217.173"
+        self.location = googlemaps.Client(key=os.environ.get('GOOGLE_API_KEY'))
+        self.ip = os.environ.get('ip')
 
     def get_location(self, location):
-        return self.map.geocode(location)
+        return self.location.geocode(location)
 
     def get_timezone(self, location):
-        return self.map.timezone(location)
+        return self.location.timezone(location)
 
     def get_elevation(self, location):
-        return self.map.elevation(location)
+        return self.location.elevation(location)
 
     def get_current_location_from_ip(self):
         return geocoder.ip(self.ip).address
@@ -59,8 +58,3 @@ class Map:
             zip_code = l['address_components'][7]
         code = zip_code["long_name"]
         return code
-
-if __name__ == '__main__':
-    m = Map()
-    print(m.parse_location_for_zip(m.get_location("3208 Golden Grove, San Antonio, TX")))
-
