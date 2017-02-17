@@ -1,15 +1,17 @@
 import os
 from os import system
 import subprocess as sub
-import re
 import timehelper
-import googlespeech
+import formatter
 
 
 # A class for internal operations on the computer
 
 class Computer:
     def __init__(self):
+        """
+        Construct a computer object and indexes applications on start up
+        """
         self.user_name = ""
         self.name = "Hal"
         self.time = timehelper.TimeHelper()
@@ -22,15 +24,18 @@ class Computer:
                 self.folders.append(a)
                 self.apps.remove(a)
 
-    """
-    :param self, String: text
-    call to system to say text via macOS
-    """
-
     def speak(self, text):
+        """
+        :param text
+        call to system to say text via macOS
+        """
         system("Say " + text)
 
     def sayHello(self):
+        """
+        HAL's greetings based on time
+        :return:
+        """
         greeting = "How can I help you"
         if self.time.is_morning():
             self.speak("Good Morning, " + greeting)
@@ -39,39 +44,25 @@ class Computer:
         elif self.time.is_evening():
             self.speak("Good Evening, " + greeting)
         else:
-            self.speak("Up late tonight?")
-
-    """
-    :param self, String: directory -> path to directory
-    :return indexes a directory, sorts, and returns
-    """
+            self.speak("Up late tonight?" + greeting)
 
     @staticmethod
     def index_directory(directory):
+        """
+        :param directory -> path to directory
+        :return indexes a directory, sorts, and returns list of files
+        """
         app_list = os.listdir(directory)
         app_list.sort()
         return app_list
 
-    """
-    :param self, String: app_name -> return a string with proper capitalization for application search
-    """
-
-    @staticmethod
-    def correct_input(input_text):
-        final = []
-        words = re.sub('[^\w]', " ", input_text).split()
-        for w in words:
-            final.append(w.capitalize())
-        return ' '.join(final)
-
-    """
-    :param self, String: application -> application you want to open
-    commands system to open application if found in directory
-    :return None
-    """
-
     def open_app(self, application):
-        selected_app = self.correct_input(application) + ".app"
+        """
+        :param application -> application you want to open as String
+        commands system to open application if found in directory
+        :return None
+        """
+        selected_app = formatter.Formatter().correct_input_for_app(application) + ".app"
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
@@ -83,7 +74,7 @@ class Computer:
             sub.call(["/usr/bin/open", "-n", "-a", directory + "Utilities/" + selected_app])
             return None
         else:
-            selected_app = self.correct_input(application)
+            selected_app = formatter.Formatter().correct_input_for_app(application)
             if selected_app in folders:
                 select_dir = self.index_directory(directory + selected_app)
                 cur = selected_app + ".app"
@@ -101,11 +92,10 @@ class Computer:
                 print("Application not found")
                 return None
 
-    """
-    :param self, ip
-    commands system to ping an IP
-    """
-
     def ping(self, hostname):
+        """
+        :param hostname
+        commands system to ping an IP
+        """
         host = "www." + hostname + ".com"
         return system("ping -c 1 " + host)
