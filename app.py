@@ -58,12 +58,12 @@ class App:
                 forecast = self.weather.current_forecast(weather_obj)
             print(location_obj)
             self.phrase = forecast
-        if 'where' in request:
+        elif 'where' in request:
             if 'i' in request:
                 self.phrase = cur_loc_obj
-        if 'high' in request or 'elevation' in request:
+        elif 'high' in request or 'elevation' in request:
             self.phrase = self.location.current_elevation()
-        if 'timezone' in request:
+        elif 'timezone' in request:
             self.phrase = self.location.current_timezone()
         else:
             self.phrase = " ".join(request)
