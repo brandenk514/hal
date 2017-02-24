@@ -4,6 +4,7 @@ import tkinter
 import weather
 import location
 import formatter
+import itertools
 
 
 # This is the main class to run HAL
@@ -43,24 +44,31 @@ class App:
         self.window.mainloop()
 
     def listening(self):
-        request = formatter.Formatter().parse(self.speech.listen())
+        request = formatter.Formatter().parse_audio_to_array(self.speech.listen())
         print(request)
         cur_loc_obj = self.location.get_current_location_from_ip()
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(cur_loc_obj))
         if 'weather' in request:
             weather_obj = self.weather.get_weather_data(location_obj)
             if 'now' in request:
-                print(True)
                 forecast = self.weather.minutely_forecast(weather_obj)
             elif 'today' in request:
                 forecast = self.weather.hourly_forecast(weather_obj)
             else:
                 forecast = self.weather.current_forecast(weather_obj)
-            print(location_obj)
             self.phrase = forecast
         elif 'where' in request:
-            if 'i' in request:
-                self.phrase = cur_loc_obj
+            location_request = "I couldn't find your location or the location you requested"
+            if 'I' in request:
+                location_request = self.location.current_location()
+            elif 'is' in request or 'locate' in request:
+                index = request.index('is') + 1
+                req_loc = []
+                for line in itertools.islice(request, index, len(request)):
+                    req_loc.append(line)
+                location_request = self.location.return_map_coordinates(formatter.Formatter()
+                                                                        .correct_location(req_loc))
+            self.phrase = location_request
         elif 'high' in request or 'elevation' in request:
             self.phrase = self.location.current_elevation()
         elif 'timezone' in request:

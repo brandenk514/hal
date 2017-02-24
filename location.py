@@ -56,14 +56,13 @@ class Location:
 
     def parse_location_for_coordinates(self, location_list):
         """
-
         :param location_list: A JSON location request
         :return: a tuple (Latitude, Longitude)
         """
         coordinates = []
-        for l in location_list:
-            coordinates.append(l['geometry']['location']['lat'])  # Latitude
-            coordinates.append(l['geometry']['location']['lng'])  # Longitude
+        for location in location_list:
+            coordinates.append(location['geometry']['location']['lat'])  # Latitude
+            coordinates.append(location['geometry']['location']['lng'])  # Longitude
         tuple_coordinates = tuple(float(c) for c in coordinates)
         return tuple_coordinates
 
@@ -79,14 +78,14 @@ class Location:
 
     def parse_timezone(self, timezone_dict):
         """
-        :parameter timezone JSON request
+        :parameter timezone_dict JSON request
         :return timeZoneID as a String
         """
         return timezone_dict['timeZoneId']
 
     def parse_location_for_zip(self, location_list):
         """
-        :parameter location JSON request
+        :parameter location_list JSON request
         :return the zipcode as a String
         """
         zip_code = ""
@@ -106,8 +105,39 @@ class Location:
 
     def current_timezone(self):
         """
-        :return: the timezone as astring for HAL to speak and display
+        :return: the timezone as a string for HAL to speak and display
         """
         tz = self.parse_timezone(self.get_timezone(self.parse_location_for_coordinates(
             self.get_location(self.get_current_location_from_ip()))))
         return "You are in the " + tz + " timezone"
+
+    def current_location(self):
+        """
+        :return: the location from your IP address as a String
+        """
+        return "You are currently in or nearby " + self.get_current_location_from_ip()
+
+    def return_map_coordinates(self, location_string):
+        e_w = ""
+        n_s = ""
+        location = self.parse_location_for_coordinates(self.get_location(location_string))
+        lat = int(round(location[0], 0))
+        long = int(round(location[1], 0))
+        if location[0] < 0:
+            n_s = "South"
+            lat *= -1
+        else:
+            n_s = "North"
+        if location[1] < 0:
+            e_w = "West"
+            long *= -1
+        else:
+            e_w = "East"
+        return "{0} is located at {1} degrees {2} and {3} degrees {4}".format(location_string, str(lat), n_s, str(long),
+                                                                              e_w)
+
+
+if __name__ == '__main__':
+    l = Location()
+    loc = l.return_map_coordinates("Bienos Aires")
+    print(loc)

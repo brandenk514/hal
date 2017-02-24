@@ -49,11 +49,13 @@ class Formatter:
             final.append(w.capitalize())
         return ' '.join(final)
 
-    def parse(self, audio):
+    def correct_location(self, location_array):
+        return " ".join(location_array)
+
+    def parse_audio_to_array(self, audio):
         """
-        :param self, audio source -> usually a phrase
+        :param audio source -> usually a phrase
         :return an array of words
         """
         sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
-        words = re.sub('[^\w]', " ", sentence).split()
-        return words
+        return re.sub('[^\w]', " ", sentence).split()
