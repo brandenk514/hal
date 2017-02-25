@@ -2,7 +2,7 @@ import os
 from os import system
 import subprocess as sub
 import timehelper
-import formatter
+import formatter as f
 
 
 # A class for internal operations on the computer
@@ -62,35 +62,32 @@ class Computer:
         commands system to open application if found in directory
         :return None
         """
-        selected_app = formatter.Formatter().correct_input_for_app(application) + ".app"
+        selected_app = f.Formatter().correct_input_for_app(application) + ".app"
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
         utilities = self.utilities
         if selected_app in apps:
             sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
-            return None
+            return "Opening " + f.Formatter().remove_app_suffix(selected_app)
         elif selected_app in utilities:
             sub.call(["/usr/bin/open", "-n", "-a", directory + "Utilities/" + selected_app])
-            return None
+            return "Opening " + f.Formatter().remove_app_suffix(selected_app)
         else:
-            selected_app = formatter.Formatter().correct_input_for_app(application)
+            selected_app = f.Formatter().correct_input_for_app(application)
             if selected_app in folders:
                 select_dir = self.index_directory(directory + selected_app)
                 cur = selected_app + ".app"
                 if cur in select_dir:
                     sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app + "/" + cur])
-                    return None
+                    return "Opening " + f.Formatter().remove_app_suffix(selected_app)
                 else:
-                    print("Application not found... Opening folder")
                     sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
-                    return None
+                    return "Application not found... Opening folder"
             elif selected_app in utilities:
-                print("Folder found, but application executable is missing")
-                return None
+                return "Folder found, but application executable is missing"
             else:
-                print("Application not found")
-                return None
+                return "Application not found"
 
     def ping(self, hostname):
         """

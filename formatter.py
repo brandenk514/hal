@@ -49,7 +49,12 @@ class Formatter:
             final.append(w.capitalize())
         return ' '.join(final)
 
-    def correct_location(self, location_array):
+    def join_array_with_spaces(self, location_array):
+        """
+        Joins an array as a sentence with spaces
+        :param location_array:
+        :return:
+        """
         return " ".join(location_array)
 
     def parse_audio_to_array(self, audio):
@@ -59,3 +64,6 @@ class Formatter:
         """
         sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
         return re.sub('[^\w]', " ", sentence).split()
+
+    def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
+        return there.sub('', app)

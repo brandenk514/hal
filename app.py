@@ -3,7 +3,7 @@ import googlespeech
 import tkinter
 import weather
 import location
-import formatter
+import formatter as f
 import itertools
 
 
@@ -44,7 +44,7 @@ class App:
         self.window.mainloop()
 
     def listening(self):
-        request = formatter.Formatter().parse_audio_to_array(self.speech.listen())
+        request = f.Formatter().parse_audio_to_array(self.speech.listen())
         print(request)
         cur_loc_obj = self.location.get_current_location_from_ip()
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(cur_loc_obj))
@@ -61,18 +61,20 @@ class App:
             location_request = "I couldn't find your location or the location you requested"
             if 'I' in request:
                 location_request = self.location.current_location()
-            elif 'is' in request or 'locate' in request:
-                index = request.index('is') + 1
-                req_loc = []
-                for line in itertools.islice(request, index, len(request)):
-                    req_loc.append(line)
-                location_request = self.location.return_map_coordinates(formatter.Formatter()
-                                                                        .correct_location(req_loc))
+            elif 'is' in request:
+                location_request = self.location.return_map_coordinates(f.Formatter().join_array_with_spaces(
+                    self.get_index_after(request, request.index('is') + 1)))
             self.phrase = location_request
         elif 'high' in request or 'elevation' in request:
             self.phrase = self.location.current_elevation()
         elif 'timezone' in request:
             self.phrase = self.location.current_timezone()
+        elif 'open' in request:
+            app = f.Formatter().join_array_with_spaces(self.get_index_after(request, request.index('open') + 1))
+            self.phrase = self.hal.open_app(app)
+        elif 'ping' in request:
+            ip = f.Formatter().join_array_with_spaces(self.get_index_after(request, request.index('ping') + 1))
+            self.hal.ping(ip)
         else:
             self.phrase = " ".join(request)
         phrase = tkinter.StringVar()
@@ -80,6 +82,13 @@ class App:
         self.text.config(textvariable=phrase)
         self.window.update()
         self.hal.speak(self.phrase)
+
+    def get_index_after(self, request, index):
+        value = []
+        for line in itertools.islice(request, index, len(request)):
+            print(line)
+            value.append(line)
+        return value
 
 
 if __name__ == '__main__':
