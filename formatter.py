@@ -79,3 +79,12 @@ class Formatter:
         if 'and' in value_array:
             value_array.remove("and")
         return value_array
+
+    def replace_degree(self, s):
+        print(s.replace("°", " degrees"))
+
+if __name__ == '__main__':
+    f = Formatter()
+    s = "78°"
+    f.replace_degree(s)
+

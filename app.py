@@ -46,53 +46,28 @@ class App:
         request = f.Formatter().parse_audio_to_array(self.speech.listen())
         print(request)
         if 'weather' in request:
-            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                self.location.get_current_location_from_ip()))
-            weather_obj = self.weather.get_weather_data(cur_loc_obj)
-            forecast = "Weather request failed, no location given"
-            if 'now' in request:
-                forecast = self.weather.minutely_forecast(weather_obj)
-            elif 'today' in request:
-                forecast = self.weather.hourly_forecast(weather_obj)
-            else:
-                forecast = self.weather.current_forecast(weather_obj)
-            self.phrase = forecast
+            self.phrase = self.weather.weather_request(request)
         elif 'where' in request:
-            location_request = "I couldn't find your location or the location you requested"
-            if 'I' in request:
-                location_request = self.location.current_location()
-            elif 'is' in request:
-                location_request = self.location.return_map_coordinates(request, request.index('is'))
-            self.phrase = location_request
+            self.phrase = self.location.location_request(request)
         elif 'high' in request or 'elevation' in request:
-            elevation_request = "No location given"
-            if 'is' in request:
-                elevation_request = self.location.get_elevation_at_location(request, request.index('is'))
-            elif 'of' in request:
-                elevation_request = self.location.get_elevation_at_location(request, request.index('of'))
-            else:
-                elevation_request = self.location.current_elevation()
-            self.phrase = elevation_request
+            self.phrase = self.location.elevation_request(request)
         elif 'distance' in request or 'far' in request:
-            distance_request = "Distance request failed. No location given"
-            if 'between' in request:
-                distance_request = self.location.get_distance_between_to_locations(request, request.index('between'))
-            elif 'to' in request:
-                distance_request = self.location.get_distance_from_current_location(request, request.index('to'))
-            self.phrase = distance_request
+            self.phrase = self.location.distance_request(request)
         elif 'timezone' in request:
-            self.phrase = self.location.current_timezone()
+            self.phrase = self.location.timezone_request(request)
         elif 'open' in request:
-            app = self.hal.display_app_name(request, request.index('open'))
-            self.phrase = self.hal.open_app(app)
+            self.phrase = self.hal.open_app_request(request)
         elif 'ping' in request:
-            self.hal.ping(self.hal.display_ip_name(request, request.index('ping')))
+            self.phrase = self.hal.ping_request(request)
+        elif 'exit' in request or 'quit' in request:
+            self.hal.quit_hal()
         else:
             self.phrase = " ".join(request)
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
         self.text.config(textvariable=phrase)
         self.window.update()
+        self.phrase.replace("°", " degrees")
         self.hal.speak(self.phrase)
 
 if __name__ == '__main__':

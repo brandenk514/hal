@@ -1,5 +1,6 @@
 import os
 from os import system
+import sys
 import subprocess as sub
 import timehelper
 import formatter
@@ -90,9 +91,10 @@ class Computer:
             else:
                 return "Application not found"
 
-    def display_app_name(self, request, request_index):
-        app = self.f.join_array_with_spaces(self.f.get_index_after(request, request_index + 1))
-        return app
+    def open_app_request(self, request):
+        app = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('open') + 1))
+        self.open_app(app)
+        return "Opening " + self.f.remove_app_suffix(app).capitalize() + "..."
 
     def ping(self, hostname):
         """
@@ -102,6 +104,10 @@ class Computer:
         host = "www." + hostname + ".com"
         return system("ping -c 1 " + host)
 
-    def display_ip_name(self, request, request_index):
-        ip = self.f.join_array_with_spaces(self.f.get_index_after(request, request_index + 1))
-        return ip
+    def ping_request(self, request):
+        ip = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('ping') + 1))
+        self.ping(ip)
+        return "Pinging " + ip + "..."
+
+    def quit_hal(self):
+        sys.exit(0)

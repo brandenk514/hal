@@ -143,7 +143,7 @@ class Location:
             long *= -1
         else:
             e_w = "East"
-        return "{0} is located at {1} degrees {2} and {3} degrees {4}".format(location_string, str(lat), n_s, str(long),
+        return "{0} is located at {1}° {2} and {3}° {4}".format(location_string, str(lat), n_s, str(long),
                                                                               e_w)
 
     def get_elevation_at_location(self, request, request_index):
@@ -167,13 +167,12 @@ class Location:
                 return "The distance between {0} and {1} is too far to calculate".format(ori, dest)
             distance = e['distance']['text']
             time = e['duration']['text']
-        return "This distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car".format(ori, dest, distance, time)
+        return "This distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car"\
+            .format(ori, dest, distance, time)
 
     def get_distance_from_current_location(self, request, request_index):
         destination = f.Formatter().join_array_with_spaces(f.Formatter().get_index_after(request, request_index + 1))
-        print(destination)
         distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), destination)
-        print(distance_matrix)
         dest = distance_matrix['destination_addresses'][0]
         rows = distance_matrix['rows'][0]
         distance = ""
@@ -185,6 +184,40 @@ class Location:
             time = e['duration']['text']
         return "The distance to {0} from your current location is approximately {1} " \
                "and it will take about {2} in travel time by car".format(dest, distance, time)
+
+    def location_request(self, request):
+        location_request = "I couldn't find your location or the location you requested"
+        if 'I' in request:
+            location_request = self.current_location()
+        elif 'is' in request:
+            location_request = self.return_map_coordinates(request, request.index('is'))
+        return location_request
+
+    def elevation_request(self, request):
+        elevation_request = "Distance request failed. No location given"
+        if 'I' in request:
+            elevation_request = self.current_elevation()
+        elif 'is' in request:
+            elevation_request = self.get_elevation_at_location(request, request.index('is'))
+        elif 'of' in request:
+            elevation_request = self.get_elevation_at_location(request, request.index('of'))
+        elif 'at'in request:
+            elevation_request = self.current_elevation()
+        return elevation_request
+
+    def distance_request(self, request):
+        distance_request = "Distance request failed. No location given"
+        if 'between' in request:
+            distance_request = self.get_distance_between_to_locations(request, request.index('between'))
+        elif 'to' in request:
+            distance_request = self.get_distance_from_current_location(request, request.index('to'))
+        return distance_request
+
+    def timezone_request(self, request):
+        # timezone_request = "Timezone request failed. No location given"
+        timezone_request = self.current_timezone()
+        return timezone_request
+
 
 if __name__ == '__main__':
     l = Location()
