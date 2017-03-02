@@ -4,7 +4,6 @@ import tkinter
 import weather
 import location
 import formatter as f
-import itertools
 
 
 # This is the main class to run HAL
@@ -15,7 +14,7 @@ class App:
         self.weather = weather.Weather()
         self.location = location.Location()
 
-        self.phrase = "Hello, my name is Hal. How can I help you?"
+        self.phrase = self.hal.sayHello()
 
         # Set up the window
         self.window = tkinter.Tk()
@@ -46,10 +45,11 @@ class App:
     def listening(self):
         request = f.Formatter().parse_audio_to_array(self.speech.listen())
         print(request)
-        cur_loc_obj = self.location.get_current_location_from_ip()
-        location_obj = self.location.parse_location_for_coordinates(self.location.get_location(cur_loc_obj))
         if 'weather' in request:
-            weather_obj = self.weather.get_weather_data(location_obj)
+            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
+                self.location.get_current_location_from_ip()))
+            weather_obj = self.weather.get_weather_data(cur_loc_obj)
+            forecast = "Weather request failed, no location given"
             if 'now' in request:
                 forecast = self.weather.minutely_forecast(weather_obj)
             elif 'today' in request:
@@ -62,19 +62,31 @@ class App:
             if 'I' in request:
                 location_request = self.location.current_location()
             elif 'is' in request:
-                location_request = self.location.return_map_coordinates(f.Formatter().join_array_with_spaces(
-                    self.get_index_after(request, request.index('is') + 1)))
+                location_request = self.location.return_map_coordinates(request, request.index('is'))
             self.phrase = location_request
         elif 'high' in request or 'elevation' in request:
-            self.phrase = self.location.current_elevation()
+            elevation_request = "No location given"
+            if 'is' in request:
+                elevation_request = self.location.get_elevation_at_location(request, request.index('is'))
+            elif 'of' in request:
+                elevation_request = self.location.get_elevation_at_location(request, request.index('of'))
+            else:
+                elevation_request = self.location.current_elevation()
+            self.phrase = elevation_request
+        elif 'distance' in request or 'far' in request:
+            distance_request = "Distance request failed. No location given"
+            if 'between' in request:
+                distance_request = self.location.get_distance_between_to_locations(request, request.index('between'))
+            elif 'to' in request:
+                distance_request = self.location.get_distance_from_current_location(request, request.index('to'))
+            self.phrase = distance_request
         elif 'timezone' in request:
             self.phrase = self.location.current_timezone()
         elif 'open' in request:
-            app = f.Formatter().join_array_with_spaces(self.get_index_after(request, request.index('open') + 1))
+            app = self.hal.display_app_name(request, request.index('open'))
             self.phrase = self.hal.open_app(app)
         elif 'ping' in request:
-            ip = f.Formatter().join_array_with_spaces(self.get_index_after(request, request.index('ping') + 1))
-            self.hal.ping(ip)
+            self.hal.ping(self.hal.display_ip_name(request, request.index('ping')))
         else:
             self.phrase = " ".join(request)
         phrase = tkinter.StringVar()
@@ -82,14 +94,6 @@ class App:
         self.text.config(textvariable=phrase)
         self.window.update()
         self.hal.speak(self.phrase)
-
-    def get_index_after(self, request, index):
-        value = []
-        for line in itertools.islice(request, index, len(request)):
-            print(line)
-            value.append(line)
-        return value
-
 
 if __name__ == '__main__':
     hal = App()

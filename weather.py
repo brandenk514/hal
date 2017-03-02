@@ -53,7 +53,7 @@ class Weather:
         :return: string for HAL to speak and display for the current forecast
         """
         temp = self.get_current_temperature(weather_data)
-        condition = formatter.Formatter().format_conditions(self.get_current_conditions(weather_data))
+        condition = formatter.Formatter().format_weather_conditions(self.get_current_conditions(weather_data))
         temp = int(round(temp, 0))
         return "It is currently " + condition + " with a temperature of " + str(temp) + " degrees"
 
@@ -63,7 +63,7 @@ class Weather:
         :return: string for HAL to speak and display for the minutely forecast
         """
         temp = self.get_current_temperature(weather_data)
-        condition = formatter.Formatter().format_conditions(self.get_minutely_weather(weather_data))
+        condition = formatter.Formatter().format_weather_conditions(self.get_minutely_weather(weather_data))
         temp = int(round(temp, 0))
         return "It looks like it will be " + condition + " with a temperature of " + str(temp) + " degrees"
 
@@ -73,6 +73,6 @@ class Weather:
         :return: string for HAL to speak and display for the hourly forecast
         """
         # temp = self.get_current_temperature(weather_data)
-        condition = formatter.Formatter().format_conditions(self.get_hourly_weather(weather_data))
+        condition = formatter.Formatter().format_weather_conditions(self.get_hourly_weather(weather_data))
         # temp = int(round(temp, 0))
         return "It looks like today will be " + condition

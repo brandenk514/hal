@@ -2,7 +2,7 @@ import os
 from os import system
 import subprocess as sub
 import timehelper
-import formatter as f
+import formatter
 
 
 # A class for internal operations on the computer
@@ -15,6 +15,7 @@ class Computer:
         self.user_name = ""
         self.name = "Hal"
         self.time = timehelper.TimeHelper()
+        self.f = formatter.Formatter()
 
         self.apps = self.index_directory("/Applications/")  # Index folders on startup
         self.folders = []
@@ -36,15 +37,15 @@ class Computer:
         HAL's greetings based on time
         :return:
         """
-        greeting = "How can I help you"
+        greeting = "how can I help you?"
         if self.time.is_morning():
-            self.speak("Good Morning, " + greeting)
+            return "Good morning, " + greeting
         elif self.time.is_afternoon():
-            self.speak("Good Afternoon, " + greeting)
+            return "Good afternoon, " + greeting
         elif self.time.is_evening():
-            self.speak("Good Evening, " + greeting)
+            return "Good evening, " + greeting
         else:
-            self.speak("Up late tonight?" + greeting)
+            return "Up late tonight?" + greeting
 
     @staticmethod
     def index_directory(directory):
@@ -62,25 +63,25 @@ class Computer:
         commands system to open application if found in directory
         :return None
         """
-        selected_app = f.Formatter().correct_input_for_app(application) + ".app"
+        selected_app = formatter.Formatter().correct_input_for_app(application) + ".app"
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
         utilities = self.utilities
         if selected_app in apps:
             sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
-            return "Opening " + f.Formatter().remove_app_suffix(selected_app)
+            return "Opening " + self.f.remove_app_suffix(selected_app)
         elif selected_app in utilities:
             sub.call(["/usr/bin/open", "-n", "-a", directory + "Utilities/" + selected_app])
-            return "Opening " + f.Formatter().remove_app_suffix(selected_app)
+            return "Opening " + self.f.remove_app_suffix(selected_app)
         else:
-            selected_app = f.Formatter().correct_input_for_app(application)
+            selected_app = self.f.correct_input_for_app(application)
             if selected_app in folders:
                 select_dir = self.index_directory(directory + selected_app)
                 cur = selected_app + ".app"
                 if cur in select_dir:
                     sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app + "/" + cur])
-                    return "Opening " + f.Formatter().remove_app_suffix(selected_app)
+                    return "Opening " + self.f.remove_app_suffix(selected_app)
                 else:
                     sub.call(["/usr/bin/open", "-n", "-a", directory + selected_app])
                     return "Application not found... Opening folder"
@@ -89,6 +90,10 @@ class Computer:
             else:
                 return "Application not found"
 
+    def display_app_name(self, request, request_index):
+        app = self.f.join_array_with_spaces(self.f.get_index_after(request, request_index + 1))
+        return app
+
     def ping(self, hostname):
         """
         :param hostname
@@ -96,3 +101,7 @@ class Computer:
         """
         host = "www." + hostname + ".com"
         return system("ping -c 1 " + host)
+
+    def display_ip_name(self, request, request_index):
+        ip = self.f.join_array_with_spaces(self.f.get_index_after(request, request_index + 1))
+        return ip

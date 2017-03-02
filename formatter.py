@@ -1,6 +1,7 @@
 import string
 import re
 import unicodedata
+import itertools
 
 
 # A class for formatting inputs for HAL to speak and display
@@ -28,7 +29,7 @@ class Formatter:
         """
         return s.lower()
 
-    def format_conditions(self, s):
+    def format_weather_conditions(self, s):
         """
         fixes formats for string inputs for weather
         :param s: string
@@ -67,3 +68,14 @@ class Formatter:
 
     def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
         return there.sub('', app)
+
+    def get_index_after(self, request, index):
+        value = []
+        for line in itertools.islice(request, index, len(request)):
+            value.append(line)
+        return value
+
+    def remove_and(self, value_array):
+        if 'and' in value_array:
+            value_array.remove("and")
+        return value_array

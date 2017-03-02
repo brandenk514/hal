@@ -1,6 +1,7 @@
 import googlemaps
 import geocoder
 import os
+import formatter as f
 
 
 # A class that using the Google API python wrapper to get json request from Google APIs
@@ -40,6 +41,13 @@ class Location:
         :return: a elevation JSON request
         """
         return self.location.elevation(location)
+
+    def get_distance_matrix(self, origin, destination):
+        """
+        :param location: A location String
+        :return: A directions JSON request
+        """
+        return self.location.distance_matrix(origin, destination)
 
     def get_current_location_from_ip(self):
         """
@@ -117,9 +125,11 @@ class Location:
         """
         return "You are currently in or nearby " + self.get_current_location_from_ip()
 
-    def return_map_coordinates(self, location_string):
+    def return_map_coordinates(self, request, request_index):
         e_w = ""
         n_s = ""
+        location_string = f.Formatter().join_array_with_spaces(
+            f.Formatter().get_index_after(request, request_index + 1))
         location = self.parse_location_for_coordinates(self.get_location(location_string))
         lat = int(round(location[0], 0))
         long = int(round(location[1], 0))
@@ -136,8 +146,47 @@ class Location:
         return "{0} is located at {1} degrees {2} and {3} degrees {4}".format(location_string, str(lat), n_s, str(long),
                                                                               e_w)
 
+    def get_elevation_at_location(self, request, request_index):
+        location = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request, request_index + 1)))
+        location_obj = self.parse_location_for_coordinates(self.get_location(location))
+        elevation = self.parse_elevation(self.get_elevation(location_obj))
+        return "{0} is at approximately {1} meters".format(location, str(int(round(elevation))))
+
+    def get_distance_between_to_locations(self, request, request_index):
+        print(f.Formatter().get_index_after(request, request_index + 1))
+        locations = f.Formatter().remove_and(f.Formatter().get_index_after(request, request_index + 1))
+        print(locations)
+        distance_matrix = self.get_distance_matrix(locations[0], locations[1])
+        dest = distance_matrix['destination_addresses'][0]
+        ori = distance_matrix['origin_addresses'][0]
+        rows = distance_matrix['rows'][0]
+        distance = ""
+        time = ""
+        for e in rows['elements']:
+            if e['status'] == "ZERO_RESULTS":
+                return "The distance between {0} and {1} is too far to calculate".format(ori, dest)
+            distance = e['distance']['text']
+            time = e['duration']['text']
+        return "This distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car".format(ori, dest, distance, time)
+
+    def get_distance_from_current_location(self, request, request_index):
+        destination = f.Formatter().join_array_with_spaces(f.Formatter().get_index_after(request, request_index + 1))
+        print(destination)
+        distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), destination)
+        print(distance_matrix)
+        dest = distance_matrix['destination_addresses'][0]
+        rows = distance_matrix['rows'][0]
+        distance = ""
+        time = ""
+        for e in rows['elements']:
+            if e['status'] == "ZERO_RESULTS":
+                return "The distance to {0} is too far to calculate".format(dest)
+            distance = e['distance']['text']
+            time = e['duration']['text']
+        return "The distance to {0} from your current location is approximately {1} " \
+               "and it will take about {2} in travel time by car".format(dest, distance, time)
 
 if __name__ == '__main__':
     l = Location()
-    loc = l.return_map_coordinates("Bienos Aires")
+    loc = l.get_distance_from_current_location("Berlin")
     print(loc)
