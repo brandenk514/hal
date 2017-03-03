@@ -45,7 +45,7 @@ class App:
     def listening(self):
         request = f.Formatter().parse_audio_to_array(self.speech.listen())
         print(request)
-        if 'weather' in request:
+        if 'weather' in request or 'outside' in request:
             self.phrase = self.weather.weather_request(request)
         elif 'where' in request:
             self.phrase = self.location.location_request(request)

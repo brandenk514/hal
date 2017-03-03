@@ -2,6 +2,8 @@ import forecastio
 import os
 import formatter as f
 import location
+import datetime
+from datetime import timedelta
 
 
 # A class that gets the weather for Dark Sky's API and a the python-forecast.io package
@@ -14,12 +16,31 @@ class Weather:
         self.disclaimer = "Powered by Dark Sky - https://darksky.net/poweredby/"
         self.location = location.Location()
 
-    def get_weather_data(self, lat_lng_tuple):
+    def get_weather_data(self, lat_lng_tuple, **keyword_parameters):
         """
         :param lat_lng_tuple: (Latitude, Longitude)
         :return: A forcastioDataBlock with a location's weather
         """
-        return forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1], units="us")
+        date_offset = 0
+        time_offset = 0
+        requested_date = datetime.datetime.now()
+        if 'time_offset' in keyword_parameters and 'date_offset' in keyword_parameters:
+            time_offset = keyword_parameters['time_offset']
+            date_offset = keyword_parameters['date_offset']
+        elif 'time_offset' in keyword_parameters and 'date_offset' not in keyword_parameters:
+            time_offset = keyword_parameters['time_offset']
+        elif 'time_offset' not in keyword_parameters and 'date_offset' in keyword_parameters:
+            date_offset = keyword_parameters['date_offset']
+        else:
+            date_offset = 0
+            time_offset = 0
+        print(datetime.datetime.now())
+        print(self.location.get_timezone_offset(lat_lng_tuple))
+        requested_date = datetime.datetime.now() # + timedelta(seconds=self.location.get_timezone_offset(lat_lng_tuple))\
+                         # + timedelta(days=date_offset) + timedelta(seconds=time_offset)
+        print(requested_date)
+        return forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
+                                        time=requested_date, units="us")
 
     def get_current_temperature(self, weather_data: forecastio):
         """
@@ -28,69 +49,57 @@ class Weather:
         """
         return weather_data.currently().temperature
 
-    def get_current_conditions(self, weather_data: forecastio):
-        """
-        :param weather_data:
-        :return: the weather summary for the current conditions in a JSON request
-        """
-        return weather_data.currently().summary
+    def get_forecast(self, weather_data, **keyword_parameters):
+        forecast_type = ""
+        if 'type' in keyword_parameters:
+            forecast_type = keyword_parameters['type']
+        if forecast_type == 'minutely':
+            return weather_data.minutely().summary
+        elif forecast_type == 'hourly':
+            return weather_data.hourly().summary
+        elif forecast_type == 'daily':
+            return weather_data.daily().summary
+        elif forecast_type == 'currently':
+            return weather_data.currently().summary
+        else:
+            return "Forecast not specified"
 
-    def get_hourly_weather(self, weather_data: forecastio):
-        """
-        :param weather_data:
-        :return: the weather summary for the hour in a JSON request
-        """
-        return weather_data.hourly().summary
-
-    def get_minutely_weather(self, weather_data: forecastio):
-        """
-        :param weather_data:
-        :return: the weather summary for the minute in a JSON request
-        """
-        return weather_data.minutely().summary
-
-    def current_forecast(self, weather_data):
-        """
-        :param weather_data: a JSON weather request
-        :return: string for HAL to speak and display for the current forecast
-        """
+    def set_current_forecast(self, weather_data, **keyword_parameters):
         temp = self.get_current_temperature(weather_data)
-        condition = f.Formatter().format_weather_conditions(self.get_current_conditions(weather_data))
         temp = int(round(temp, 0))
-        return "It is currently " + condition + " with a temperature of " + str(temp) + "°F"
+        forecast_type = ""
+        if 'type' in keyword_parameters:
+            forecast_type = keyword_parameters['type']
+        if forecast_type == 'minutely':
+            condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
+            return "It looks like it will be " + condition + " with a temperature of " + str(temp) + "°F"
+        elif forecast_type == 'hourly':
+            condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
+            return "It looks like today will be " + condition
+        elif forecast_type == 'daily':
+            conditions = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
+            return conditions
+        elif forecast_type == 'currently':
+            condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
+            return "It is currently " + condition + " with a temperature of " + str(temp) + "°F"
+        else:
+            return "Forecast not specified"
 
-    def minutely_forecast(self, weather_data):
-        """
-        :param weather_data: a JSON weather request
-        :return: string for HAL to speak and display for the minutely forecast
-        """
-        temp = self.get_current_temperature(weather_data)
-        condition = f.Formatter().format_weather_conditions(self.get_minutely_weather(weather_data))
-        temp = int(round(temp, 0))
-        return "It looks like it will be " + condition + " with a temperature of " + str(temp) + "°F"
-
-    def hourly_forecast(self, weather_data):
-        """
-        :param weather_data: a JSON weather request
-        :return: string for HAL to speak and display for the hourly forecast
-        """
-        # temp = self.get_current_temperature(weather_data)
-        condition = f.Formatter().format_weather_conditions(self.get_hourly_weather(weather_data))
-        # temp = int(round(temp, 0))
-        return "It looks like today will be " + condition
-
-    def get_weather_at_location(self, request, request_index):
+    def get_weather_at_location(self, request, request_index, **keyword_parameters):
         """
         Gets the weather for a specific location
         :param request: An array of strings
         :param request_index: the word to look after for location information
         :return: The forecast as a string
         """
-        location_string = f.Formatter().join_array_with_spaces((
-            f.Formatter().get_index_after(request, request_index + 1)))
+        date = 0
+        if 'date_offset' in keyword_parameters:
+            date = keyword_parameters['date_offset']
+
+        location_string = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request, request_index + 1)))
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_string))
-        weather_obj = self.get_weather_data(location_obj)
-        return self.current_forecast(weather_obj)
+        weather_obj = self.get_weather_data(location_obj, date_offset=date)
+        return self.set_current_forecast(weather_obj, type="currently")
 
     def weather_request(self, request):
         """
@@ -103,11 +112,21 @@ class Weather:
         weather_obj = self.get_weather_data(cur_loc_obj)
         forecast = "Weather request failed, no location given"
         if 'now' in request:
-            forecast = self.minutely_forecast(weather_obj)
+            forecast = self.set_current_forecast(weather_obj, type="minutely")
         elif 'today' in request:
-            forecast = self.hourly_forecast(weather_obj)
+            forecast = self.set_current_forecast(weather_obj, type="hourly")
+        elif 'tomorrow' in request:
+            forecast = self.get_weather_at_location(request, request.index('in'), date_offset=1)
         elif 'in' in request:
             forecast = self.get_weather_at_location(request, request.index('in'))
         else:
-            forecast = self.current_forecast(weather_obj)
+            forecast = self.set_current_forecast(weather_obj, type="currently")
         return forecast
+
+
+if __name__ == '__main__':
+    w = Weather()
+    weather = w.set_current_forecast(w.get_weather_data(w.location.parse_location_for_coordinates(w.location.get_location(
+            w.location.get_current_location_from_ip()))), type="currently")
+    print(w.location.get_current_location_from_ip())
+    print(weather)

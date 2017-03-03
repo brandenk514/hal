@@ -102,6 +102,10 @@ class Location:
         code = zip_code["long_name"]
         return code
 
+    def get_timezone_offset(self, location_tuple):
+        tz = self.get_timezone(location_tuple)
+        return tz['rawOffset']
+
     def current_elevation(self):
         """
         :return the elevation as a string for HAl to speak and display
@@ -257,3 +261,8 @@ class Location:
         # timezone_request = "Timezone request failed. No location given"
         timezone_request = self.current_timezone()
         return timezone_request
+
+if __name__ == '__main__':
+    l = Location()
+    print(l.get_timezone_offset((52, 4)))
+    print(type(l.get_timezone_offset((52, 4))))
