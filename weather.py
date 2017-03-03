@@ -80,6 +80,12 @@ class Weather:
         return "It looks like today will be " + condition
 
     def get_weather_at_location(self, request, request_index):
+        """
+        Gets the weather for a specific location
+        :param request: An array of strings
+        :param request_index: the word to look after for location information
+        :return: The forecast as a string
+        """
         location_string = f.Formatter().join_array_with_spaces((
             f.Formatter().get_index_after(request, request_index + 1)))
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_string))
@@ -87,6 +93,11 @@ class Weather:
         return self.current_forecast(weather_obj)
 
     def weather_request(self, request):
+        """
+        Handles all weather request from user
+        :param request: An array of strings
+        :return: A string of the forecast
+        """
         cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
             self.location.get_current_location_from_ip()))
         weather_obj = self.get_weather_data(cur_loc_obj)

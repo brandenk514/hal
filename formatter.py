@@ -67,15 +67,31 @@ class Formatter:
         return re.sub('[^\w]', " ", sentence).split()
 
     def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
+        """
+        Removes ".app" from string for speech
+        :param app: Application
+        :param there: Regex
+        :return: String
+        """
         return there.sub('', app)
 
     def get_index_after(self, request, index):
+        """
+        Gets values of an array between two indices
+        :param request: Array of Strings
+        :param index: Index to start at
+        :return: Everything after index in an Array
+        """
         value = []
         for line in itertools.islice(request, index, len(request)):
             value.append(line)
         return value
 
     def split_locations(self, value_array):
+        """
+        :param value_array: An array of strings
+        :return: Two location as separate items in an array -> [Berlin, Los Angeles]
+        """
         d1 = []
         d2 = []
         index = value_array.index('and')
@@ -85,10 +101,3 @@ class Formatter:
             d2.append(line)
         location_list = [self.join_array_with_spaces(d1), self.join_array_with_spaces(d2)]
         return location_list
-
-if __name__ == '__main__':
-    f = Formatter()
-    s = "Berlin and San Antonio"
-    print(f.split_locations(s))
-
-

@@ -92,22 +92,39 @@ class Computer:
                 return "Application not found"
 
     def open_app_request(self, request):
+        """
+        Handles request for applications
+        :param request: An array of strings
+        :return: A string and opens the application upon success
+        """
         app = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('open') + 1))
-        self.open_app(app)
-        return "Opening " + self.f.remove_app_suffix(app).capitalize() + "..."
+        return self.open_app(app)
 
     def ping(self, hostname):
         """
         :param hostname
         commands system to ping an IP
         """
-        host = "www." + hostname + ".com"
+        host = "www." + hostname + ".edu"
         return system("ping -c 1 " + host)
 
     def ping_request(self, request):
+        """
+        Handles a ping request
+        :param request: An array of strings
+        :return: ping and ip or hostname upon success
+        """
         ip = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('ping') + 1))
         self.ping(ip)
         return "Pinging " + ip + "..."
 
     def quit_hal(self):
+        """
+        Closes and quits HAL
+        :return:
+        """
         sys.exit(0)
+
+if __name__ == '__main__':
+    h = Computer()
+    h.ping("Google")

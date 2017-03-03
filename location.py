@@ -126,6 +126,11 @@ class Location:
         return "You are currently in or nearby " + self.get_current_location_from_ip()
 
     def return_map_coordinates(self, request, request_index):
+        """
+        :param request: An array of strings
+        :param request_index: A selected word to get location data after
+        :return: A string consisting of Lat and Long information
+        """
         e_w = ""
         n_s = ""
         location_string = f.Formatter().join_array_with_spaces(
@@ -147,12 +152,22 @@ class Location:
                                                                               e_w)
 
     def get_elevation_at_location(self, request, request_index):
+        """
+        :param request: An array of strings
+        :param request_index: A selected word to get location data after
+        :return:  A string consisting of an elevation at a location
+        """
         location = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request, request_index + 1)))
         location_obj = self.parse_location_for_coordinates(self.get_location(location))
         elevation = self.parse_elevation(self.get_elevation(location_obj))
         return "{0} is at approximately {1} meters".format(location, str(int(round(elevation))))
 
     def get_distance_between_to_locations(self, request, request_index):
+        """
+        :param request: An array of strings
+        :param request_index: A selected word to get location data after
+        :return:  A string consisting of distance and travel time between two locations in a given radius
+        """
         print(f.Formatter().get_index_after(request, request_index + 1))
         locations = f.Formatter().split_locations(f.Formatter().get_index_after(request, request_index + 1))
         print(locations)
@@ -171,6 +186,11 @@ class Location:
             .format(ori, dest, distance, time)
 
     def get_distance_from_current_location(self, request, request_index):
+        """
+        :param request: An array of strings
+        :param request_index: A selected word to get location data after
+        :return:  A string consisting of distance and travel time between a location and your current location
+        """
         destination = f.Formatter().join_array_with_spaces(f.Formatter().get_index_after(request, request_index + 1))
         distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), destination)
         dest = distance_matrix['destination_addresses'][0]
@@ -186,6 +206,11 @@ class Location:
                "and it will take about {2} in travel time by car".format(dest, distance, time)
 
     def location_request(self, request):
+        """
+        Handles a location request from the user
+        :param request: An array of strings
+        :return: Location information for the user
+        """
         location_request = "I couldn't find your location or the location you requested"
         if 'I' in request:
             location_request = self.current_location()
@@ -194,6 +219,11 @@ class Location:
         return location_request
 
     def elevation_request(self, request):
+        """
+        Handles an elevation request from the user
+        :param request: An array of strings
+        :return: Elevation information for the user
+        """
         elevation_request = "Distance request failed. No location given"
         if 'I' in request:
             elevation_request = self.current_elevation()
@@ -206,6 +236,11 @@ class Location:
         return elevation_request
 
     def distance_request(self, request):
+        """
+        Handles a distance request from the user
+        :param request: An array of strings
+        :return: Distance information for the user
+        """
         distance_request = "Distance request failed. No location given"
         if 'between' in request:
             distance_request = self.get_distance_between_to_locations(request, request.index('between'))
@@ -214,12 +249,11 @@ class Location:
         return distance_request
 
     def timezone_request(self, request):
+        """
+        Handles a timezone request from the user
+        :param request: An array of strings
+        :return: Timezone information for the user
+        """
         # timezone_request = "Timezone request failed. No location given"
         timezone_request = self.current_timezone()
         return timezone_request
-
-
-if __name__ == '__main__':
-    l = Location()
-    loc = l.get_distance_from_current_location("Berlin")
-    print(loc)
