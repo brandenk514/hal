@@ -57,7 +57,7 @@ class Weather:
         temp = self.get_current_temperature(weather_data)
         condition = f.Formatter().format_weather_conditions(self.get_current_conditions(weather_data))
         temp = int(round(temp, 0))
-        return "It is currently " + condition + " with a temperature of " + str(temp) + "°"
+        return "It is currently " + condition + " with a temperature of " + str(temp) + "°F"
 
     def minutely_forecast(self, weather_data):
         """
@@ -67,7 +67,7 @@ class Weather:
         temp = self.get_current_temperature(weather_data)
         condition = f.Formatter().format_weather_conditions(self.get_minutely_weather(weather_data))
         temp = int(round(temp, 0))
-        return "It looks like it will be " + condition + " with a temperature of " + str(temp) + "°"
+        return "It looks like it will be " + condition + " with a temperature of " + str(temp) + "°F"
 
     def hourly_forecast(self, weather_data):
         """

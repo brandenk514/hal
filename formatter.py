@@ -75,16 +75,20 @@ class Formatter:
             value.append(line)
         return value
 
-    def remove_and(self, value_array):
-        if 'and' in value_array:
-            value_array.remove("and")
-        return value_array
-
-    def replace_degree(self, s):
-        print(s.replace("°", " degrees"))
+    def split_locations(self, value_array):
+        d1 = []
+        d2 = []
+        index = value_array.index('and')
+        for line in itertools.islice(value_array, 0, index):
+            d1.append(line)
+        for line in itertools.islice(value_array, index + 1, len(value_array)):
+            d2.append(line)
+        location_list = [self.join_array_with_spaces(d1), self.join_array_with_spaces(d2)]
+        return location_list
 
 if __name__ == '__main__':
     f = Formatter()
-    s = "78°"
-    f.replace_degree(s)
+    s = "Berlin and San Antonio"
+    print(f.split_locations(s))
+
 

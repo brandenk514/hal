@@ -154,7 +154,7 @@ class Location:
 
     def get_distance_between_to_locations(self, request, request_index):
         print(f.Formatter().get_index_after(request, request_index + 1))
-        locations = f.Formatter().remove_and(f.Formatter().get_index_after(request, request_index + 1))
+        locations = f.Formatter().split_locations(f.Formatter().get_index_after(request, request_index + 1))
         print(locations)
         distance_matrix = self.get_distance_matrix(locations[0], locations[1])
         dest = distance_matrix['destination_addresses'][0]
@@ -167,7 +167,7 @@ class Location:
                 return "The distance between {0} and {1} is too far to calculate".format(ori, dest)
             distance = e['distance']['text']
             time = e['duration']['text']
-        return "This distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car"\
+        return "The distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car"\
             .format(ori, dest, distance, time)
 
     def get_distance_from_current_location(self, request, request_index):
