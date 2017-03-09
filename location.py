@@ -153,7 +153,7 @@ class Location:
         else:
             e_w = "East"
         return "{0} is located at {1}° {2} and {3}° {4}".format(location_string, str(lat), n_s, str(long),
-                                                                              e_w)
+                                                                e_w)
 
     def get_elevation_at_location(self, request, request_index):
         """
@@ -231,11 +231,9 @@ class Location:
         elevation_request = "Distance request failed. No location given"
         if 'I' in request:
             elevation_request = self.current_elevation()
-        elif 'is' in request:
-            elevation_request = self.get_elevation_at_location(request, request.index('is'))
         elif 'of' in request:
             elevation_request = self.get_elevation_at_location(request, request.index('of'))
-        elif 'at'in request:
+        elif 'at' in request:
             elevation_request = self.current_elevation()
         return elevation_request
 

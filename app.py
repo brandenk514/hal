@@ -29,8 +29,7 @@ class App:
 
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
-        self.text = tkinter.Label(self.frame, bg="black", fg="green", height=5, textvariable=phrase,
-                                  wraplength=300)
+        self.text = tkinter.Label(self.frame, bg="black", fg="green", height=5, textvariable=phrase, wraplength=300)
 
         # add widgets
         self.listen_button = tkinter.Button(self.frame, text="Press to speak to HAL", bg="black",

@@ -4,6 +4,8 @@ import formatter as f
 import location
 import datetime
 from datetime import timedelta
+from pytz import timezone
+import pytz
 
 
 # A class that gets the weather for Dark Sky's API and a the python-forecast.io package
@@ -23,7 +25,6 @@ class Weather:
         """
         date_offset = 0
         time_offset = 0
-        requested_date = datetime.datetime.now()
         if 'time_offset' in keyword_parameters and 'date_offset' in keyword_parameters:
             time_offset = keyword_parameters['time_offset']
             date_offset = keyword_parameters['date_offset']
@@ -34,11 +35,17 @@ class Weather:
         else:
             date_offset = 0
             time_offset = 0
-        print(datetime.datetime.now())
-        print(self.location.get_timezone_offset(lat_lng_tuple))
-        requested_date = datetime.datetime.now() # + timedelta(seconds=self.location.get_timezone_offset(lat_lng_tuple))\
-                         # + timedelta(days=date_offset) + timedelta(seconds=time_offset)
-        print(requested_date)
+        current_tz_id = self.location.parse_timezone(self.location.get_timezone(lat_lng_tuple))
+        print("Timezone Offset: " + current_tz_id)
+        print("Date Offset: " + str(date_offset))
+        print("Time Offset: " + str(time_offset))
+        utc = pytz.utc
+        utc_dt = utc.localize(datetime.datetime.utcnow())
+        current_timezone = timezone(current_tz_id)
+        current_dt = current_timezone.normalize(utc_dt.astimezone(current_timezone))
+
+        requested_date = current_dt + timedelta(seconds=time_offset) + timedelta(days=date_offset)
+
         return forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
                                         time=requested_date, units="us")
 
@@ -110,13 +117,14 @@ class Weather:
         cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
             self.location.get_current_location_from_ip()))
         weather_obj = self.get_weather_data(cur_loc_obj)
-        forecast = "Weather request failed, no location given"
         if 'now' in request:
             forecast = self.set_current_forecast(weather_obj, type="minutely")
         elif 'today' in request:
             forecast = self.set_current_forecast(weather_obj, type="hourly")
         elif 'tomorrow' in request:
-            forecast = self.get_weather_at_location(request, request.index('in'), date_offset=1)
+            # Need to fix for timezone
+            forecast = self.set_current_forecast(weather_obj, type="hourly")
+            # self.get_weather_at_location(request, request.index('in'), date_offset=1)
         elif 'in' in request:
             forecast = self.get_weather_at_location(request, request.index('in'))
         else:
@@ -126,7 +134,6 @@ class Weather:
 
 if __name__ == '__main__':
     w = Weather()
-    weather = w.set_current_forecast(w.get_weather_data(w.location.parse_location_for_coordinates(w.location.get_location(
-            w.location.get_current_location_from_ip()))), type="currently")
-    print(w.location.get_current_location_from_ip())
-    print(weather)
+    k = w.get_weather_data((55, 12))
+    print(k.currently())
+    print(w.get_current_temperature(k))
