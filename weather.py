@@ -45,16 +45,17 @@ class Weather:
         current_dt = current_timezone.normalize(utc_dt.astimezone(current_timezone))
 
         requested_date = current_dt + timedelta(seconds=time_offset) + timedelta(days=date_offset)
-
-        return forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
+        f = forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
                                         time=requested_date, units="us")
+        print(f.currently())
+        return f
 
     def get_current_temperature(self, weather_data: forecastio):
         """
         :param weather_data:
         :return: the weather temperature for the current weather in a JSON request
         """
-        return weather_data.currently().temperature
+        return int(round(weather_data.currently().temperature, 0))
 
     def get_forecast(self, weather_data, **keyword_parameters):
         forecast_type = ""
@@ -73,7 +74,6 @@ class Weather:
 
     def set_current_forecast(self, weather_data, **keyword_parameters):
         temp = self.get_current_temperature(weather_data)
-        temp = int(round(temp, 0))
         forecast_type = ""
         if 'type' in keyword_parameters:
             forecast_type = keyword_parameters['type']
@@ -92,6 +92,18 @@ class Weather:
         else:
             return "Forecast not specified"
 
+    def set_future_forecast(self, weather_data, **keyword_parameters):
+        temp = self.get_current_temperature(weather_data)
+        time_frame = ""
+        condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type="currently"))
+        if 'time_frame' in keyword_parameters:
+            time_frame = keyword_parameters['time_frame']
+        if time_frame == "tomorrow":
+            return "It will be " + condition + " with a temperature of " + str(temp) + "°F"
+        else:
+            time_frame = "The future is cloudy"
+        return time_frame
+
     def get_weather_at_location(self, request, request_index, **keyword_parameters):
         """
         Gets the weather for a specific location
@@ -102,11 +114,18 @@ class Weather:
         date = 0
         if 'date_offset' in keyword_parameters:
             date = keyword_parameters['date_offset']
-
-        location_string = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request, request_index + 1)))
+        print(date)
+        location_string = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request,
+                                                                                              request_index + 1)))
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_string))
         weather_obj = self.get_weather_data(location_obj, date_offset=date)
-        return self.set_current_forecast(weather_obj, type="currently")
+
+        if date == 1:
+            return "Tomorrow in " + location_string.capitalize() + ", " + self.set_future_forecast(
+                weather_obj, time_frame="tomorrow").lower()
+        else:
+            return "In " + location_string.capitalize() + ", " + self.set_current_forecast(
+                weather_obj, type="currently").lower()
 
     def weather_request(self, request):
         """
@@ -114,20 +133,24 @@ class Weather:
         :param request: An array of strings
         :return: A string of the forecast
         """
-        cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-            self.location.get_current_location_from_ip()))
-        weather_obj = self.get_weather_data(cur_loc_obj)
         if 'now' in request:
+            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
+                self.location.get_current_location_from_ip()))
+            weather_obj = self.get_weather_data(cur_loc_obj)
             forecast = self.set_current_forecast(weather_obj, type="minutely")
         elif 'today' in request:
+            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
+                self.location.get_current_location_from_ip()))
+            weather_obj = self.get_weather_data(cur_loc_obj)
             forecast = self.set_current_forecast(weather_obj, type="hourly")
         elif 'tomorrow' in request:
-            # Need to fix for timezone
-            forecast = self.set_current_forecast(weather_obj, type="hourly")
-            # self.get_weather_at_location(request, request.index('in'), date_offset=1)
+            forecast = self.get_weather_at_location(request, request.index('in'), date_offset=1)
         elif 'in' in request:
             forecast = self.get_weather_at_location(request, request.index('in'))
         else:
+            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
+                self.location.get_current_location_from_ip()))
+            weather_obj = self.get_weather_data(cur_loc_obj)
             forecast = self.set_current_forecast(weather_obj, type="currently")
         return forecast
 

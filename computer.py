@@ -105,7 +105,7 @@ class Computer:
         :param hostname
         commands system to ping an IP
         """
-        host = "www." + hostname + ".edu"
+        host = "www." + hostname
         return system("ping -c 1 " + host)
 
     def ping_request(self, request):
@@ -127,4 +127,4 @@ class Computer:
 
 if __name__ == '__main__':
     h = Computer()
-    h.ping("Google")
+    h.ping("google.com")
