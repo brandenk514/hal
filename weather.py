@@ -45,10 +45,10 @@ class Weather:
         current_dt = current_timezone.normalize(utc_dt.astimezone(current_timezone))
 
         requested_date = current_dt + timedelta(seconds=time_offset) + timedelta(days=date_offset)
-        f = forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
-                                        time=requested_date, units="us")
-        print(f.currently())
-        return f
+        forecast = forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
+                                            time=requested_date, units="us")
+        print(forecast.currently())
+        return forecast
 
     def get_current_temperature(self, weather_data: forecastio):
         """
