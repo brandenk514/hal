@@ -58,7 +58,7 @@ class App:
             self.phrase = self.hal.open_app_request(request)
         elif 'ping' in request:
             self.phrase = self.hal.ping_request(request)
-        elif 'exit' in request or 'quit' in request:
+        elif 'goodbye' in request or 'quit' in request:
             self.hal.quit_hal()
         else:
             self.phrase = " ".join(request)
