@@ -69,9 +69,13 @@ class NaturalLanguage:
             ("How tall is the Empire State Building", elevation_tag),
             ("Open Unity", application_tag),
             ("What is the elevation of Baltimore", elevation_tag),
-            ("What is the elevation of Moscow", elevation_tag)
+            ("What is the elevation of Moscow", elevation_tag),
+            ("What time is Baltimore in", timezone_tag),
+            ("What timezone is Russia in", timezone_tag),
+            ("What timezone is Mexico City in", timezone_tag),
+            ("What timezone is Atlanta in", timezone_tag),
         ]
 
 if __name__ == '__main__':
     nl = NaturalLanguage()
-    nl.classify_phrase("What is the elevation of Moscow")
+    nl.classify_phrase("What timezone is California in")
