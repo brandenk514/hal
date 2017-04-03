@@ -1,81 +1,133 @@
 from textblob.classifiers import NaiveBayesClassifier
+import textblob
 import random
+import os
+import formatter as f
+import geonamescache as geo
+import pickle
 
 
 class NaturalLanguage:
     def __init__(self):
-        self.features_set = self.train_hal()
+        self.features_set = []
+        self.application_tag = "application"
+        self.timezone_tag = "timezone"
+        self.weather_tag = "weather"
+        self.location_tag = "location"
+        self.weather_tomorrow_tag = "weather tomorrow"
+        self.weather_location_tag = "weather location"
+        self.weather_location_tomorrow_tag = "weather location tomorrow"
+        self.distance_tag = "distance"
+        self.current_distance_from_tag = "current distance from"
+        self.train_hal()
+
         random.shuffle(self.features_set)
         split = int(len(self.features_set)) - int(len(self.features_set) / 4)
         train_set, test_set = self.features_set[:split], self.features_set[split:]
-        print(len(train_set))
-        print(len(test_set))
-        self.classifier = NaiveBayesClassifier(train_set)
+        print("Full list: " + str(len(self.features_set)))
+        print("Training set: " + str(len(train_set)))
+        print("Test set: " + str(len(test_set)))
+
+        if os.path.isfile('request_classifier.pickle'):
+            self.classifier = self.load_classifier()
+        else:
+            print("training...")
+            self.classifier = NaiveBayesClassifier(train_set)
+            print("Done")
+
+        self.save_classifier(self.classifier)
         print(self.classifier.accuracy(test_set))
 
     def classify_phrase(self, phrase):
-        classified = self.classifier.classify(phrase)
-        phrase_tuple = (phrase, classified)
-        if phrase_tuple not in self.features_set:
-            self.features_set.append(phrase_tuple)
-        print(classified)
-        return classified
+        print(self.classifier.classify(phrase))
+        return self.classifier.classify(phrase)
 
     def train_hal(self):
-        weather_tag = "weather"
-        location_tag = "location"
-        elevation_tag = "elevation"
-        distance_tag = "distance"
-        timezone_tag = "timezone"
-        application_tag = "application"
-        return [
-            ("What is the weather", weather_tag),
-            ("What is the weather in Baltimore", weather_tag),
-            ("What is the weather in Copenhagen, Denmark tomorrow", weather_tag),
-            ("What is the weather in San Antonio", weather_tag),
-            ("Is it going to rain today", weather_tag),
-            ("Is it going to rain tomorrow", weather_tag),
-            ("Where is Morocco", location_tag),
-            ("Where is Copenhagen", location_tag),
-            ("where is Texas", location_tag),
-            ("Where is Denver", location_tag),
-            ("Where is Mount Everest", location_tag),
-            ("Where is Baltimore", location_tag),
-            ('Where is Denmark', location_tag),
-            ("What is the weather tomorrow", weather_tag),
-            ("What is the weather in Scotland", weather_tag),
-            ("Where is Nova Scotia", location_tag),
-            ("Where is Canada", location_tag),
-            ("Will it rain tomorrow", weather_tag),
-            ("How tall is mount Everest", elevation_tag),
-            ("What is the elevation of baltimore", elevation_tag),
-            ("How far is it to California", distance_tag),
-            ("What is the distance between New York and Los Angeles", distance_tag),
-            ("What timezone am I in", timezone_tag),
-            ("Open Safari", application_tag),
-            ("Open Notes", application_tag),
-            ("Open Disk Utility", application_tag),
-            ("What is the distance to D.C.", distance_tag),
-            ("Will it be sunny tomorrow", weather_tag),
-            ("How cold is it outside", weather_tag),
-            ("Where is the Statue of Liberty", location_tag),
-            ("Where am I", location_tag),
-            ("What is the weather today", weather_tag),
-            ("What is the weather tomorrow", weather_tag),
-            ("How far is it to Disney World", distance_tag),
-            ("How far is it to Disney Land", distance_tag),
-            ("What is the distance to San Antonio", distance_tag),
-            ("How high is Matterhorn", elevation_tag),
-            ("How tall is the Empire State Building", elevation_tag),
-            ("Open Unity", application_tag),
-            ("What is the elevation of Baltimore", elevation_tag),
-            ("What is the elevation of Moscow", elevation_tag),
-            ("What time is Baltimore in", timezone_tag),
-            ("What timezone is Russia in", timezone_tag),
-            ("What timezone is Mexico City in", timezone_tag),
-            ("What timezone is Atlanta in", timezone_tag),
+        for app in os.listdir("/Applications/"):
+            self.features_set.append(self.train_application_request(app))
+            self.features_set.append(self.train_different_weather_request())
+        for country in self.get_list_countries():
+            self.features_set.append(self.train_location_request(country))
+            self.features_set.append(self.train_timezone_request(country))
+            self.features_set.append(self.train_distance_current_request(country))
+            self.features_set.append(self.train_weather_request(country))
+            self.features_set.append(self.train_weather_tomorrow_request(country))
+        for state in self.get_state_list():
+            self.features_set.append(self.train_location_request(state))
+            self.features_set.append(self.train_timezone_request(state))
+            self.features_set.append(self.train_distance_current_request(state))
+            self.features_set.append(self.train_weather_request(state))
+            self.features_set.append(self.train_weather_tomorrow_request(state))
+        for i in range(0, len(self.get_state_list()) - 1):
+            self.features_set.append(
+                self.train_distance_request(self.get_state_list()[i], self.get_state_list()[i + 1]))
+        for i in range(0, len(self.get_list_countries()) - 1):
+            self.features_set.append(self.train_distance_request(self.get_list_countries()[i], self.get_list_countries()
+            [i + 1]))
+
+    def train_application_request(self, app):
+        return "Open " + f.Formatter().remove_app_suffix(app), self.application_tag
+
+    def train_location_request(self, location):
+        return "Where is " + location, self.location_tag
+
+    def train_weather_request(self, city):
+        return "What is the weather in " + city, self.weather_location_tag
+
+    def train_timezone_request(self, location):
+        return "What timezone is " + location + "in", self.timezone_tag
+
+    def train_weather_tomorrow_request(self, location):
+        return "What is weather tomorrow in " + location, self.weather_location_tomorrow_tag
+
+    def train_distance_request(self, location_from, location_to):
+        return "What is the distance between " + location_from + " and " + location_to, self.distance_tag
+
+    def train_distance_current_request(self, location_to):
+        return "How far it is to " + location_to, self.current_distance_from_tag
+
+    def train_different_weather_request(self):
+        request = [
+            ("Will it rain tomorrow", self.weather_tomorrow_tag),
+            ("Is it going to rain tomorrow", self.weather_tomorrow_tag),
+            ("Will it be sunny tomorrow", self.weather_tomorrow_tag),
+            ("Is it cold outside", self.weather_tag),
+            ("What is the weather", self.weather_tag),
+            ("What is the weather today", self.weather_tag),
+            ("How cold is it outside", self.weather_tag),
+            ("How hot is it going to be today", self.weather_tag),
+            ("What is the weather tomorrow", self.weather_tomorrow_tag),
+            ("What is the weather like today", self.weather_tag),
         ]
+        i = random.randint(0, len(request) - 1)
+        return request[i]
+
+    def get_list_countries(self):
+        gc = geo.GeonamesCache().get_countries_by_names()
+        countries = []
+        for key in gc.keys():
+            countries.append(key)
+        return countries
+
+    def get_state_list(self):
+        gc = geo.GeonamesCache().get_us_states_by_names()
+        states = []
+        for key in gc.keys():
+            states.append(key)
+        return states
+
+    def save_classifier(self, classifier):
+        file = open('request_classifier.pickle', 'wb')
+        pickle.dump(classifier, file, -1)
+        file.close()
+
+    def load_classifier(self):
+        file = open('request_classifier.pickle', 'rb')
+        classifier = pickle.load(file)
+        file.close()
+        return classifier
+
 
 if __name__ == '__main__':
     nl = NaturalLanguage()
-    nl.classify_phrase("What timezone is California in")
+    nl.classify_phrase("What is the weather")

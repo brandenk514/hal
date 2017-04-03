@@ -25,7 +25,7 @@ class App:
 
         # canvas for hal image
         self.canvas = tkinter.Canvas(self.window, bg="black", height=350, bd=0)
-        self.canvas.create_oval(100, 125, 200, 225, fill="red")
+        self.canvas.create_oval(100, 125, 200, 225, fill='#%02x%02x%02x' % self.ablend(1, (0,0,0), (255,0,0)))
 
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
@@ -68,6 +68,11 @@ class App:
         self.window.update()
         self.phrase.replace("°", " degrees")
         self.hal.speak(self.phrase)
+
+    def ablend(self, a, fg, bg):
+        return ((1 - a) * fg[0] + a * bg[0],
+                (1 - a) * fg[1] + a * bg[1],
+                (1 - a) * fg[2] + a * bg[2])
 
 if __name__ == '__main__':
     hal = App()
