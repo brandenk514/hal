@@ -6,6 +6,7 @@ import datetime
 from datetime import timedelta
 from pytz import timezone
 import pytz
+import app
 
 
 # A class that gets the weather for Dark Sky's API and a the python-forecast.io package
@@ -99,7 +100,7 @@ class Weather:
         if 'time_frame' in keyword_parameters:
             time_frame = keyword_parameters['time_frame']
         if time_frame == "tomorrow":
-            return "It will be " + condition + " with a temperature of " + str(temp) + "°F"
+            return "It will be " + condition + " with a temperature of " + str(temp)
         else:
             time_frame = "The future is cloudy"
         return time_frame
@@ -122,34 +123,25 @@ class Weather:
 
         if date == 1:
             return "Tomorrow in " + location_string.capitalize() + ", " + self.set_future_forecast(
-                weather_obj, time_frame="tomorrow").lower()
+                weather_obj, time_frame="tomorrow").lower() + "°F"
         else:
             return "In " + location_string.capitalize() + ", " + self.set_current_forecast(
-                weather_obj, type="currently").lower()
+                weather_obj, type="currently").lower() + "°F"
 
-    def weather_request(self, request):
+    def weather_request(self, request, classification):
         """
         Handles all weather request from user
         :param request: An array of strings
+        :param classification: A string from a NaiveBayesClassifier
         :return: A string of the forecast
         """
-        if 'now' in request:
-            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                self.location.get_current_location_from_ip()))
-            weather_obj = self.get_weather_data(cur_loc_obj)
-            forecast = self.set_current_forecast(weather_obj, type="minutely")
-        elif 'today' in request:
-            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                self.location.get_current_location_from_ip()))
-            weather_obj = self.get_weather_data(cur_loc_obj)
-            forecast = self.set_current_forecast(weather_obj, type="hourly")
-        elif 'tomorrow' in request:
+        if classification == "weather tomorrow" and 'in' in request:  # Need to solve tomorrow ambiguity
             forecast = self.get_weather_at_location(request, request.index('in'), date_offset=1)
-        elif 'in' in request:
+        elif classification == "weather" and 'in' in request:
             forecast = self.get_weather_at_location(request, request.index('in'))
         else:
             cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                self.location.get_current_location_from_ip()))
+                    self.location.get_current_location_from_ip()))
             weather_obj = self.get_weather_data(cur_loc_obj)
             forecast = self.set_current_forecast(weather_obj, type="currently")
         return forecast

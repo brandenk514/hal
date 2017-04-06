@@ -4,12 +4,14 @@ import tkinter
 import weather
 import location
 import formatter as f
+import naturalLanguage
 
 
 # This is the main class to run HAL
 class App:
     def __init__(self):
         self.hal = computer.Computer()
+        self.ai = naturalLanguage.NaturalLanguage()
         self.speech = googlespeech.GoogleSpeech()
         self.weather = weather.Weather()
         self.location = location.Location()
@@ -25,7 +27,7 @@ class App:
 
         # canvas for hal image
         self.canvas = tkinter.Canvas(self.window, bg="black", height=350, bd=0)
-        self.canvas.create_oval(100, 125, 200, 225, fill='#%02x%02x%02x' % self.ablend(1, (0,0,0), (255,0,0)))
+        self.canvas.create_oval(100, 125, 200, 225, fill="red")
 
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
@@ -43,25 +45,25 @@ class App:
 
     def listening(self):
         request = f.Formatter().parse_audio_to_array(self.speech.listen())
-        print(request)
-        if 'weather' in request or 'outside' in request:
-            self.phrase = self.weather.weather_request(request)
-        elif 'where' in request:
+        self.phrase = " ".join(request)
+        print(self.phrase)
+        classification = self.ai.classify_phrase(self.phrase)
+        if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
+            self.phrase = self.weather.weather_request(request, classification)
+        elif classification == self.ai.location_tag:
             self.phrase = self.location.location_request(request)
-        elif 'high' in request or 'elevation' in request:
+        elif classification == self.ai.elevation_tag:
             self.phrase = self.location.elevation_request(request)
-        elif 'distance' in request or 'far' in request:
+        elif classification == self.ai.distance_tag or classification == self.ai.current_distance_from_tag:
             self.phrase = self.location.distance_request(request)
-        elif 'timezone' in request:
+        elif classification == self.ai.timezone_tag:
             self.phrase = self.location.timezone_request(request)
-        elif 'open' in request:
+        elif classification == self.ai.application_tag:
             self.phrase = self.hal.open_app_request(request)
-        elif 'ping' in request:
-            self.phrase = self.hal.ping_request(request)
-        elif 'goodbye' in request or 'quit' in request:
-            self.hal.quit_hal()
+        # elif 'goodbye' in self.phrase or 'quit' in self.phrase:
+            # self.hal.quit_hal()
         else:
-            self.phrase = " ".join(request)
+            self.phrase = " ".join(self.phrase)
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
         self.text.config(textvariable=phrase)
