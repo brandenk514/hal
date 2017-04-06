@@ -55,7 +55,7 @@ class App:
         elif classification == self.ai.elevation_tag:
             self.phrase = self.location.elevation_request(request)
         elif classification == self.ai.distance_tag or classification == self.ai.current_distance_from_tag:
-            self.phrase = self.location.distance_request(request)
+            self.phrase = self.location.distance_request(request, classification)
         elif classification == self.ai.timezone_tag:
             self.phrase = self.location.timezone_request(request)
         elif classification == self.ai.application_tag:

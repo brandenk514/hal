@@ -228,7 +228,7 @@ class Location:
         :param request: An array of strings
         :return: Elevation information for the user
         """
-        elevation_request = "Distance request failed. No location given"
+        elevation_request = "Elevation request failed. No location given"
         if 'I' in request:
             elevation_request = self.current_elevation()
         elif 'of' in request:
@@ -237,16 +237,16 @@ class Location:
             elevation_request = self.current_elevation()
         return elevation_request
 
-    def distance_request(self, request):
+    def distance_request(self, request, classification):
         """
         Handles a distance request from the user
         :param request: An array of strings
         :return: Distance information for the user
         """
         distance_request = "Distance request failed. No location given"
-        if 'between' in request:
+        if classification == "distance":
             distance_request = self.get_distance_between_to_locations(request, request.index('between'))
-        elif 'to' in request:
+        elif classification == "distance from current loc":
             distance_request = self.get_distance_from_current_location(request, request.index('to'))
         return distance_request
 
@@ -256,8 +256,9 @@ class Location:
         :param request: An array of strings
         :return: Timezone information for the user
         """
-        # timezone_request = "Timezone request failed. No location given"
-        timezone_request = self.current_timezone()
+        timezone_request = "Timezone request failed. No location given"
+        if len(request) != 0:
+            timezone_request = self.current_timezone()
         return timezone_request
 
 if __name__ == '__main__':
