@@ -22,12 +22,15 @@ class Location:
         """
         try:
             return self.location.geocode(location)
+        except googlemaps.exceptions.ApiError:
+            self.error_message = "Google geocode API error"
         except googlemaps.exceptions.HTTPError:
             self.error_message = "Google geocode HTTP Error"
         except googlemaps.exceptions.Timeout:
             self.error_message = "Google geocode Timeout Error"
         except googlemaps.exceptions.TransportError:
             self.error_message = "Google geocode transport Error"
+        print(self.error_message)
 
     def get_location_from_coordinates(self, location_tuple):
         """
@@ -52,7 +55,8 @@ class Location:
 
     def get_distance_matrix(self, origin, destination):
         """
-        :param location: A location String
+        :param origin: A location String
+        :param destination: A location String
         :return: A directions JSON request
         """
         return self.location.distance_matrix(origin, destination)
@@ -146,8 +150,6 @@ class Location:
         :param request_index: A selected word to get location data after
         :return: A string consisting of Lat and Long information
         """
-        e_w = ""
-        n_s = ""
         location_string = f.Formatter().join_array_with_spaces(
             f.Formatter().get_index_after(request, request_index + 1))
         location = self.parse_location_for_coordinates(self.get_location(location_string))
@@ -252,6 +254,7 @@ class Location:
         """
         Handles a distance request from the user
         :param request: An array of strings
+        :param classification: A string that is a NaiveBayes Classification
         :return: Distance information for the user
         """
         distance_request = "Distance request failed. No location given"
@@ -271,8 +274,3 @@ class Location:
         if len(request) != 0:
             timezone_request = self.current_timezone()
         return timezone_request
-
-if __name__ == '__main__':
-    l = Location()
-    print(l.get_timezone_offset((52, 4)))
-    print(type(l.get_timezone_offset((52, 4))))

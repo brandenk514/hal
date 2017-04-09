@@ -36,9 +36,6 @@ class Weather:
             date_offset = 0
             time_offset = 0
         current_tz_id = self.location.parse_timezone(self.location.get_timezone(lat_lng_tuple))
-        print("Timezone Offset: " + current_tz_id)
-        print("Date Offset: " + str(date_offset))
-        print("Time Offset: " + str(time_offset))
         utc = pytz.utc
         utc_dt = utc.localize(datetime.datetime.utcnow())
         current_timezone = timezone(current_tz_id)
@@ -47,7 +44,6 @@ class Weather:
         requested_date = current_dt + timedelta(seconds=time_offset) + timedelta(days=date_offset)
         forecast = forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
                                             time=requested_date, units="us")
-        print(forecast.currently())
         return forecast
 
     def get_current_temperature(self, weather_data: forecastio):
@@ -79,7 +75,7 @@ class Weather:
             forecast_type = keyword_parameters['type']
         if forecast_type == 'minutely':
             condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return "It looks like it will be " + condition + " with a temperature of " + str(temp) + "°F"
+            return "It looks like it will be " + condition + " with a temperature of " + str(temp)
         elif forecast_type == 'hourly':
             condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
             return "It looks like today will be " + condition
@@ -88,7 +84,7 @@ class Weather:
             return conditions
         elif forecast_type == 'currently':
             condition = f.Formatter().format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return "It is currently " + condition + " with a temperature of " + str(temp) + "°F"
+            return "It is currently " + condition + " with a temperature of " + str(temp)
         else:
             return "Forecast not specified"
 
@@ -147,10 +143,3 @@ class Weather:
             else:
                 forecast = self.set_current_forecast(weather_obj, type="currently")
         return forecast
-
-
-if __name__ == '__main__':
-    w = Weather()
-    k = w.get_weather_data((55, 12))
-    print(k.currently())
-    print(w.get_current_temperature(k))

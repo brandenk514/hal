@@ -1,12 +1,12 @@
 from textblob.classifiers import NaiveBayesClassifier
 from textblob import Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
+import textblob
 import random
 import os
 import formatter as f
 import geonamescache as geo
 import pickle
-import time
 
 
 class NaturalLanguage:
@@ -20,36 +20,29 @@ class NaturalLanguage:
         self.distance_tag = "distance"
         self.current_distance_from_tag = "distance from current loc"
         self.elevation_tag = "elevation"
+        self.error_tag = "error"
         self.train_hal()
 
         random.shuffle(self.features_set)
         split = int(len(self.features_set)) - int(len(self.features_set) / 4)
         train_set, test_set = self.features_set[:split], self.features_set[split:]
-        print("Full list: " + str(len(self.features_set)))
-        print("Training set: " + str(len(train_set)))
-        print("Test set: " + str(len(test_set)))
 
-        t0 = time.time()
         if os.path.isfile('request_classifier.pickle'):
-            self.classifier = self.load_classifier()
+            self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
         else:
-            print("training...")
-            classy = NaiveBayesClassifier(train_set)
-            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=classy)
-            print("Accuracy: " + str(classy.accuracy(test_set)))
+            print("Training...")
+            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=NaiveBayesClassifier(train_set))
             print("Done")
-        t1 = time.time()
-        print("Training time: " + str(t1 - t0))
-        t2 = time.time()
         self.save_classifier(self.classifier)
-        t3 = time.time()
-        print("Classification time: " + str(t3-t2))
 
     def classify_phrase(self, tb_phrase):
-        print("Classification: " + self.classifier(tb_phrase).classify())
         return self.classifier(tb_phrase).classify()
 
     def train_hal(self):
+        """
+        Creates a feature set for HAl to train on using location from the geonamescache package 
+        :return: 
+        """
         for app in os.listdir("/Applications/"):
             self.features_set.append(self.train_application_request(app))
             self.features_set.append(self.train_different_phrased_request())
@@ -120,7 +113,8 @@ class NaturalLanguage:
             ("How hot is it going to bree today", self.weather_tag),
             ("What is the weather tomorrow", self.weather_tomorrow_tag),
             ("What is the weather like today", self.weather_tag),
-            ("What timezone am I in", self.timezone_tag)
+            ("What timezone am I in", self.timezone_tag),
+            ("Could not understand audio", self.error_tag),
         ]
         i = random.randint(0, len(request) - 1)
         return request[i]
@@ -140,16 +134,24 @@ class NaturalLanguage:
         return states
 
     def save_classifier(self, classifier):
+        """
+        Takes in a classifier and pickle it
+        :param classifier: 
+        :return: 
+        """
         file = open('request_classifier.pickle', 'wb')
         pickle.dump(classifier, file, -1)
         file.close()
 
     def load_classifier(self):
+        """
+        Load a classifier from a pickle to speed up training
+        :return: 
+        """
         file = open('request_classifier.pickle', 'rb')
         classifier = pickle.load(file)
         file.close()
         return classifier
 
-if __name__ == '__main__':
-    nl = NaturalLanguage()
-    nl.classify_phrase("What is the weather in San Antonio")
+    def phrase_to_textblob(self, phrase):
+        return textblob.TextBlob(phrase).tags

@@ -15,7 +15,6 @@ class App:
         self.speech = googlespeech.GoogleSpeech()
         self.weather = weather.Weather()
         self.location = location.Location()
-
         self.phrase = self.hal.sayHello()
 
         # Set up the window
@@ -44,10 +43,13 @@ class App:
         self.window.mainloop()
 
     def listening(self):
-        request = f.Formatter().parse_audio_to_array(self.speech.listen())
+        request = f.Formatter().parse_audio_to_array(self.speech.listen)
         self.phrase = " ".join(request)
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
+        print("Classification: " + classification)
+        request2 = self.ai.phrase_to_textblob(self.phrase)
+        print(request2)
         if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
             self.phrase = self.weather.weather_request(request, classification)
         elif classification == self.ai.location_tag:
