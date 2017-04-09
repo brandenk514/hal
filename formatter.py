@@ -35,8 +35,11 @@ class Formatter:
         :param s: string
         :return:  string with no punctuation and all lower case
         """
-        s = self.strip_punctuation(s)
-        s = self.to_lower(s)
+        if s is not None:
+            s = self.strip_punctuation(s)
+            s = self.to_lower(s)
+        else:
+            s = "No location given"
         return s
 
     def correct_input_for_app(self, input_text):

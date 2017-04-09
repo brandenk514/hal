@@ -34,24 +34,25 @@ class NaturalLanguage:
             self.classifier = self.load_classifier()
         else:
             print("training...")
-            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=NaiveBayesClassifier(train_set))
+            classy = NaiveBayesClassifier(train_set)
+            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=classy)
+            print("Accuracy: " + str(classy.accuracy(test_set)))
             print("Done")
-
         t1 = time.time()
-        print("Training took: " + str(t1 - t0))  # ~294.56 -> ~0.25
+        print("Training time: " + str(t1 - t0))
         t2 = time.time()
         self.save_classifier(self.classifier)
         t3 = time.time()
-        print("Classification took: " + str(t3-t2))  # ~98.47
+        print("Classification time: " + str(t3-t2))
 
     def classify_phrase(self, tb_phrase):
-        print(self.classifier(tb_phrase).classify())
+        print("Classification: " + self.classifier(tb_phrase).classify())
         return self.classifier(tb_phrase).classify()
 
     def train_hal(self):
         for app in os.listdir("/Applications/"):
             self.features_set.append(self.train_application_request(app))
-            self.features_set.append(self.train_different_weather_request())
+            self.features_set.append(self.train_different_phrased_request())
         for country in self.get_list_countries():
             self.features_set.append(self.train_location_request(country))
             self.features_set.append(self.train_timezone_request(country))
@@ -107,7 +108,7 @@ class NaturalLanguage:
     def train_elevation_request_high(self, location):
         return "How high is " + location, self.elevation_tag
 
-    def train_different_weather_request(self):
+    def train_different_phrased_request(self):
         request = [
             ("Will it rain tomorrow", self.weather_tomorrow_tag),
             ("Is it going to rain tomorrow", self.weather_tomorrow_tag),
@@ -119,6 +120,7 @@ class NaturalLanguage:
             ("How hot is it going to bree today", self.weather_tag),
             ("What is the weather tomorrow", self.weather_tomorrow_tag),
             ("What is the weather like today", self.weather_tag),
+            ("What timezone am I in", self.timezone_tag)
         ]
         i = random.randint(0, len(request) - 1)
         return request[i]

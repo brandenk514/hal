@@ -20,7 +20,7 @@ class GoogleSpeech:
         try:
             return self.recognizer.recognize_google(audio)
         except speech_recognition.WaitTimeoutError:
-            return "Time Wait out:"
+            return "Audio not heard"
         except speech_recognition.UnknownValueError:
             return "Could not understand audio"
         except speech_recognition.RequestError as e:

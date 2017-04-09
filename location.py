@@ -13,13 +13,21 @@ class Location:
         """
         self.location = googlemaps.Client(key=os.environ.get('GOOGLE_API_KEY'))
         self.ip = os.environ.get('ip')
+        self.error_message = ""
 
     def get_location(self, location):
         """
         :param location: a string of an address
         :return: a location JSON request
         """
-        return self.location.geocode(location)
+        try:
+            return self.location.geocode(location)
+        except googlemaps.exceptions.HTTPError:
+            self.error_message = "Google geocode HTTP Error"
+        except googlemaps.exceptions.Timeout:
+            self.error_message = "Google geocode Timeout Error"
+        except googlemaps.exceptions.TransportError:
+            self.error_message = "Google geocode transport Error"
 
     def get_location_from_coordinates(self, location_tuple):
         """
@@ -67,12 +75,15 @@ class Location:
         :param location_list: A JSON location request
         :return: a tuple (Latitude, Longitude)
         """
-        coordinates = []
-        for location in location_list:
-            coordinates.append(location['geometry']['location']['lat'])  # Latitude
-            coordinates.append(location['geometry']['location']['lng'])  # Longitude
-        tuple_coordinates = tuple(float(c) for c in coordinates)
-        return tuple_coordinates
+        if location_list is not None:
+            coordinates = []
+            for location in location_list:
+                coordinates.append(location['geometry']['location']['lat'])  # Latitude
+                coordinates.append(location['geometry']['location']['lng'])  # Longitude
+            tuple_coordinates = tuple(float(c) for c in coordinates)
+            return tuple_coordinates
+        else:
+            print("Google parsing geocode HTTP Error")
 
     def parse_elevation(self, elevation_list):
         """

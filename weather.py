@@ -6,7 +6,6 @@ import datetime
 from datetime import timedelta
 from pytz import timezone
 import pytz
-import app
 
 
 # A class that gets the weather for Dark Sky's API and a the python-forecast.io package
@@ -115,7 +114,6 @@ class Weather:
         date = 0
         if 'date_offset' in keyword_parameters:
             date = keyword_parameters['date_offset']
-        print(date)
         location_string = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request,
                                                                                               request_index + 1)))
         location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_string))
@@ -141,9 +139,13 @@ class Weather:
             forecast = self.get_weather_at_location(request, request.index('in'))
         else:
             cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                    self.location.get_current_location_from_ip()))
+                self.location.get_current_location_from_ip()))
             weather_obj = self.get_weather_data(cur_loc_obj)
-            forecast = self.set_current_forecast(weather_obj, type="currently")
+            if classification == "weather tomorrow":
+                forecast = "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow")\
+                    .lower() + "°F"
+            else:
+                forecast = self.set_current_forecast(weather_obj, type="currently")
         return forecast
 
 

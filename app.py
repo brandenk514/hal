@@ -46,7 +46,7 @@ class App:
     def listening(self):
         request = f.Formatter().parse_audio_to_array(self.speech.listen())
         self.phrase = " ".join(request)
-        print(self.phrase)
+        print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
         if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
             self.phrase = self.weather.weather_request(request, classification)
