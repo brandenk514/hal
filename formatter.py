@@ -61,13 +61,12 @@ class Formatter:
         """
         return " ".join(location_array)
 
-    def parse_audio_to_array(self, audio):
+    def parse_audio_to_string(self, audio):
         """
         :param audio source -> usually a phrase
         :return an array of words
         """
-        sentence = unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
-        return re.sub('[^\w]', " ", sentence).split()
+        return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
 
     def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
         """

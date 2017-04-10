@@ -100,46 +100,47 @@ class Weather:
             time_frame = "The future is cloudy"
         return time_frame
 
-    def get_weather_at_location(self, request, request_index, **keyword_parameters):
+    def get_weather_at_location(self, location_requested, **keyword_parameters):
         """
         Gets the weather for a specific location
-        :param request: An array of strings
-        :param request_index: the word to look after for location information
+        :param location_requested: A location as a string
         :return: The forecast as a string
         """
         date = 0
         if 'date_offset' in keyword_parameters:
             date = keyword_parameters['date_offset']
-        location_string = f.Formatter().join_array_with_spaces((f.Formatter().get_index_after(request,
-                                                                                              request_index + 1)))
-        location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_string))
-        weather_obj = self.get_weather_data(location_obj, date_offset=date)
+        if location_requested != "":
+            location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_requested))
+            weather_obj = self.get_weather_data(location_obj, date_offset=date)
+            if location_obj is None:
 
-        if date == 1:
-            return "Tomorrow in " + location_string.capitalize() + ", " + self.set_future_forecast(
-                weather_obj, time_frame="tomorrow").lower() + "°F"
-        else:
-            return "In " + location_string.capitalize() + ", " + self.set_current_forecast(
-                weather_obj, type="currently").lower() + "°F"
-
-    def weather_request(self, request, classification):
-        """
-        Handles all weather request from user
-        :param request: An array of strings
-        :param classification: A string from a NaiveBayesClassifier
-        :return: A string of the forecast
-        """
-        if classification == "weather tomorrow" and 'in' in request:  # Need to solve tomorrow ambiguity
-            forecast = self.get_weather_at_location(request, request.index('in'), date_offset=1)
-        elif classification == "weather" and 'in' in request:
-            forecast = self.get_weather_at_location(request, request.index('in'))
+                self.set_future_forecast(weather_obj)
+            if date == 1:
+                return "Tomorrow in " + location_requested.capitalize() + ", " + self.set_future_forecast(
+                    weather_obj, time_frame="tomorrow").lower() + "°F"
+            else:
+                return "In " + location_requested.capitalize() + ", " + self.set_current_forecast(
+                    weather_obj, type="currently").lower() + "°F"
         else:
             cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
                 self.location.get_current_location_from_ip()))
             weather_obj = self.get_weather_data(cur_loc_obj)
-            if classification == "weather tomorrow":
-                forecast = "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow")\
+            if date == 1:
+                return "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow") \
                     .lower() + "°F"
             else:
-                forecast = self.set_current_forecast(weather_obj, type="currently")
+                return self.set_current_forecast(weather_obj, type="currently")
+
+    def weather_request(self, location_requested, classification):
+        """
+        Handles all weather request from user
+        :param location_requested: An array of strings
+        :param classification: A string from a NaiveBayesClassifier
+        :return: A string of the forecast
+        """
+        forecast = ""
+        if classification == "weather tomorrow":
+            forecast = self.get_weather_at_location(location_requested, date_offset=1)
+        elif classification == "weather":
+            forecast = self.get_weather_at_location(location_requested)
         return forecast

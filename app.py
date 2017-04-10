@@ -43,25 +43,25 @@ class App:
         self.window.mainloop()
 
     def listening(self):
-        request = f.Formatter().parse_audio_to_array(self.speech.listen)
-        self.phrase = " ".join(request)
+        self.phrase = f.Formatter().parse_audio_to_string(self.speech.listen)
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
         print("Classification: " + classification)
-        request2 = self.ai.phrase_to_textblob(self.phrase)
-        print(request2)
+
+        requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
+
         if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
-            self.phrase = self.weather.weather_request(request, classification)
+            self.phrase = self.weather.weather_request(requested_location, classification)
         elif classification == self.ai.location_tag:
-            self.phrase = self.location.location_request(request)
+            self.phrase = self.location.location_request(requested_location)
         elif classification == self.ai.elevation_tag:
-            self.phrase = self.location.elevation_request(request)
-        elif classification == self.ai.distance_tag or classification == self.ai.current_distance_from_tag:
-            self.phrase = self.location.distance_request(request, classification)
+            self.phrase = self.location.elevation_request(requested_location)
+        # elif classification == self.ai.distance_tag or classification == self.ai.current_distance_from_tag:
+            # self.phrase = self.location.distance_request(self.phrase, classification)
         elif classification == self.ai.timezone_tag:
-            self.phrase = self.location.timezone_request(request)
+            self.phrase = self.location.timezone_request(requested_location)
         elif classification == self.ai.application_tag:
-            self.phrase = self.hal.open_app_request(request)
+            self.phrase = self.hal.open_app_request(requested_location)
         # elif 'goodbye' in self.phrase or 'quit' in self.phrase:
             # self.hal.quit_hal()
         else:

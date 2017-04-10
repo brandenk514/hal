@@ -31,7 +31,9 @@ class NaturalLanguage:
             self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
         else:
             print("Training...")
-            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=NaiveBayesClassifier(train_set))
+            c = NaiveBayesClassifier(train_set)
+            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=c)
+            print(c.accuracy(test_set))
             print("Done")
         self.save_classifier(self.classifier)
 
@@ -115,6 +117,7 @@ class NaturalLanguage:
             ("What is the weather like today", self.weather_tag),
             ("What timezone am I in", self.timezone_tag),
             ("Could not understand audio", self.error_tag),
+            ("where am I?", self.location_tag)
         ]
         i = random.randint(0, len(request) - 1)
         return request[i]
@@ -155,3 +158,14 @@ class NaturalLanguage:
 
     def phrase_to_textblob(self, phrase):
         return textblob.TextBlob(phrase).tags
+
+    def find_location(self, textblob_phrase):
+        location = []
+        for p in textblob_phrase:
+            if p[1] == "NNP":
+                location.append(p[0])
+        return " ".join(location)
+
+if __name__ == '__main__':
+    nl = NaturalLanguage()
+    print(nl.classify_phrase("Where am I"))
