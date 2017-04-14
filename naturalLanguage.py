@@ -162,10 +162,7 @@ class NaturalLanguage:
     def find_location(self, textblob_phrase):
         location = []
         for p in textblob_phrase:
-            if p[1] == "NNP":
+            print(p)
+            if p[1] == "NNP" or p[1] == "VB":
                 location.append(p[0])
         return " ".join(location)
-
-if __name__ == '__main__':
-    nl = NaturalLanguage()
-    print(nl.classify_phrase("Where am I"))

@@ -20,7 +20,7 @@ class GoogleSpeech:
             audio = self.recognizer.listen(source, 15)
         try:
             return self.recognizer.recognize_google(audio)
-        except speech_recognition.WaitTimeoutError():
+        except speech_recognition.WaitTimeoutError:
             return "Audio not heard"
         except speech_recognition.UnknownValueError:
             return "Could not understand audio"

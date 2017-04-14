@@ -68,6 +68,9 @@ class Formatter:
         """
         return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
 
+    def split_sentence(self, sentence):
+        return re.sub('[^\w]', " ", sentence).split()
+
     def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
         """
         Removes ".app" from string for speech
@@ -96,8 +99,9 @@ class Formatter:
         """
         d1 = []
         d2 = []
+        first_index = value_array.index('between')
         index = value_array.index('and')
-        for line in itertools.islice(value_array, 0, index):
+        for line in itertools.islice(value_array, first_index + 1, index):
             d1.append(line)
         for line in itertools.islice(value_array, index + 1, len(value_array)):
             d2.append(line)

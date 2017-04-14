@@ -47,23 +47,24 @@ class App:
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
         print("Classification: " + classification)
-
         requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
-
-        if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
+        print(requested_location)
+        if self.phrase == 'goodbye' or self.phrase == 'quit':
+            self.hal.quit_hal()
+        elif classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
             self.phrase = self.weather.weather_request(requested_location, classification)
         elif classification == self.ai.location_tag:
             self.phrase = self.location.location_request(requested_location)
         elif classification == self.ai.elevation_tag:
             self.phrase = self.location.elevation_request(requested_location)
-        # elif classification == self.ai.distance_tag or classification == self.ai.current_distance_from_tag:
-            # self.phrase = self.location.distance_request(self.phrase, classification)
+        elif classification == self.ai.distance_tag:
+            self.phrase = self.location.distance_request(self.phrase, classification)
+        elif classification == self.ai.current_distance_from_tag:
+            self.phrase = self.location.get_distance_from_current_location(requested_location)
         elif classification == self.ai.timezone_tag:
             self.phrase = self.location.timezone_request(requested_location)
         elif classification == self.ai.application_tag:
             self.phrase = self.hal.open_app_request(requested_location)
-        # elif 'goodbye' in self.phrase or 'quit' in self.phrase:
-            # self.hal.quit_hal()
         else:
             self.phrase = " ".join(self.phrase)
         phrase = tkinter.StringVar()
@@ -72,11 +73,6 @@ class App:
         self.window.update()
         self.phrase.replace("°", " degrees")
         self.hal.speak(self.phrase)
-
-    def ablend(self, a, fg, bg):
-        return ((1 - a) * fg[0] + a * bg[0],
-                (1 - a) * fg[1] + a * bg[1],
-                (1 - a) * fg[2] + a * bg[2])
 
 if __name__ == '__main__':
     hal = App()

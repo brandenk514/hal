@@ -13,7 +13,7 @@ class Location:
         """
         self.location = googlemaps.Client(key=os.environ.get('GOOGLE_API_KEY'))
         self.ip = os.environ.get('ip')
-        self.error_message = ""
+        self.f = f.Formatter()
 
     def get_location(self, location):
         """
@@ -23,14 +23,13 @@ class Location:
         try:
             return self.location.geocode(location)
         except googlemaps.exceptions.ApiError:
-            self.error_message = "Google geocode API error"
+            return "geocode API error"
         except googlemaps.exceptions.HTTPError:
-            self.error_message = "Google geocode HTTP Error"
+            return "geocode HTTP Error"
         except googlemaps.exceptions.Timeout:
-            self.error_message = "Google geocode Timeout Error"
+            return "geocode Timeout Error"
         except googlemaps.exceptions.TransportError:
-            self.error_message = "Google geocode transport Error"
-        print(self.error_message)
+            return "geocode Transport Error"
 
     def get_location_from_coordinates(self, location_tuple):
         """
@@ -162,8 +161,7 @@ class Location:
             long *= -1
         else:
             e_w = "East"
-        return "{0} is located at {1}° {2} and {3}° {4}".format(location_requested, str(lat), n_s, str(long),
-                                                                e_w)
+        return "{0} is located at {1}° {2} and {3}° {4}".format(location_requested, str(lat), n_s, str(long), e_w)
 
     def get_elevation_at_location(self, location_requested):
         """
@@ -174,34 +172,33 @@ class Location:
         elevation = self.parse_elevation(self.get_elevation(location_obj))
         return "{0} is at approximately {1} meters".format(location_requested, str(int(round(elevation))))
 
-    def get_distance_between_to_locations(self, request, request_index):
+    def get_distance_between_to_locations(self, distance_request):
         """
-        :param request: An array of strings
-        :param request_index: A selected word to get location data after
+        :param distance_request: A string 
         :return:  A string consisting of distance and travel time between two locations in a given radius
         """
-        print(f.Formatter().get_index_after(request, request_index + 1))
-        locations = f.Formatter().split_locations(f.Formatter().get_index_after(request, request_index + 1))
+        locations = self.f.split_locations(self.f.split_sentence(distance_request))
         print(locations)
         distance_matrix = self.get_distance_matrix(locations[0], locations[1])
-        dest = distance_matrix['destination_addresses'][0]
+        destination = distance_matrix['destination_addresses'][0]
         ori = distance_matrix['origin_addresses'][0]
         rows = distance_matrix['rows'][0]
         distance = ""
         time = ""
         for e in rows['elements']:
             if e['status'] == "ZERO_RESULTS":
-                return "The distance between {0} and {1} is too far to calculate".format(ori, dest)
+                return "The distance between {0} and {1} is too far to calculate".format(ori, destination)
             distance = e['distance']['text']
             time = e['duration']['text']
         return "The distance between {0} and {1} is approximately {2} and it will take about {3} in travel time by car"\
-            .format(ori, dest, distance, time)
+            .format(ori, destination, distance, time)
 
     def get_distance_from_current_location(self, location_requested):
         """
         :param location_requested: A location as a string
         :return:  A string consisting of distance and travel time between a location and your current location
         """
+        print(location_requested)
         distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), location_requested)
         dest = distance_matrix['destination_addresses'][0]
         rows = distance_matrix['rows'][0]
@@ -239,18 +236,18 @@ class Location:
             elevation_request = self.get_elevation_at_location(location_requested)
         return elevation_request
 
-    def distance_request(self, location_requested, classification):
+    def distance_request(self, locations_requested, classification):
         """
         Handles a distance request from the user
-        :param location_requested: An array of strings
+        :param locations_requested: An array of strings
         :param classification: A string that is a NaiveBayes Classification
         :return: Distance information for the user
         """
-        distance_request = "Distance location_requested failed. No location given"
+        distance_request = "Distance locations_requested failed. No location given"
         if classification == "distance":
-            distance_request = self.get_distance_between_to_locations(location_requested, location_requested.index('between'))
+            distance_request = self.get_distance_between_to_locations(locations_requested)
         elif classification == "distance from current loc":
-            distance_request = self.get_distance_from_current_location(location_requested)
+            distance_request = self.get_distance_from_current_location(locations_requested)
         return distance_request
 
     def timezone_request(self, location_requested):
