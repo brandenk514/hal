@@ -7,6 +7,7 @@ class GoogleSpeech:
         Constructs a new googleSpeech object
         """
         self.recognizer = speech_recognition.Recognizer()
+        self.error_message = ""
 
     @property
     def listen(self):
@@ -21,8 +22,8 @@ class GoogleSpeech:
         try:
             return self.recognizer.recognize_google(audio)
         except speech_recognition.WaitTimeoutError:
-            return "Audio not heard"
+            self.error_message = "Are you there?"
         except speech_recognition.UnknownValueError:
-            return "Could not understand audio"
+            self.error_message = "Hmmm... I didn't quite get that"
         except speech_recognition.RequestError as e:
-            return "Recognition Error: {0}".format(e)
+            self.error_message = "Recognition Error: {0}".format(e)

@@ -14,6 +14,7 @@ class Location:
         self.location = googlemaps.Client(key=os.environ.get('GOOGLE_API_KEY'))
         self.ip = os.environ.get('ip')
         self.f = f.Formatter()
+        self.error_message = ""
 
     def get_location(self, location):
         """
@@ -23,34 +24,61 @@ class Location:
         try:
             return self.location.geocode(location)
         except googlemaps.exceptions.ApiError:
-            return "geocode API error"
+            self.error_message = "geocode API Error"
         except googlemaps.exceptions.HTTPError:
-            return "geocode HTTP Error"
+            self.error_message = "geocode HTTP Error"
         except googlemaps.exceptions.Timeout:
-            return "geocode Timeout Error"
+            self.error_message = "geocode Timeout Error"
         except googlemaps.exceptions.TransportError:
-            return "geocode Transport Error"
+            self.error_message = "geocode Transport Error"
 
     def get_location_from_coordinates(self, location_tuple):
         """
         :param location_tuple: (Latitude, Longitude)
         :return: a location JSON request
         """
-        return self.location.reverse_geocode(location_tuple)
+        try:
+            return self.location.reverse_geocode(location_tuple)
+        except googlemaps.exceptions.ApiError:
+            self.error_message = "reverse_geocode API Error"
+        except googlemaps.exceptions.HTTPError:
+            self.error_message = "reverse_geocode HTTP Error"
+        except googlemaps.exceptions.Timeout:
+            self.error_message = "reverse_geocode Timeout Error"
+        except googlemaps.exceptions.TransportError:
+            self.error_message = "reverse_geocode Transport Error"
 
     def get_timezone(self, location):
         """
         :param location: A JSON location request
         :return: a timezone JSON request
         """
-        return self.location.timezone(location)
+        try:
+            return self.location.timezone(location)
+        except googlemaps.exceptions.ApiError:
+            self.error_message = "timezone API Error"
+        except googlemaps.exceptions.HTTPError:
+            self.error_message = "timezone HTTP Error"
+        except googlemaps.exceptions.Timeout:
+            self.error_message = "timezone Timeout Error"
+        except googlemaps.exceptions.TransportError:
+            self.error_message = "timezone Transport Error"
 
     def get_elevation(self, location):
         """
         :param location: A JSON location request
         :return: a elevation JSON request
         """
-        return self.location.elevation(location)
+        try:
+            return self.location.elevation(location)
+        except googlemaps.exceptions.ApiError:
+            self.error_message = "elevation API Error"
+        except googlemaps.exceptions.HTTPError:
+            self.error_message = "elevation HTTP Error"
+        except googlemaps.exceptions.Timeout:
+            self.error_message = "elevation Timeout Error"
+        except googlemaps.exceptions.TransportError:
+            self.error_message = "elevation Transport Error"
 
     def get_distance_matrix(self, origin, destination):
         """
@@ -58,7 +86,16 @@ class Location:
         :param destination: A location String
         :return: A directions JSON request
         """
-        return self.location.distance_matrix(origin, destination)
+        try:
+            return self.location.distance_matrix(origin, destination)
+        except googlemaps.exceptions.ApiError:
+            self.error_message = "distance_matrix API Error"
+        except googlemaps.exceptions.HTTPError:
+            self.error_message = "distance_matrix HTTP Error"
+        except googlemaps.exceptions.Timeout:
+            self.error_message = "distance_matrix Timeout Error"
+        except googlemaps.exceptions.TransportError:
+            self.error_message = "distance_matrix Transport Error"
 
     def get_current_location_from_ip(self):
         """

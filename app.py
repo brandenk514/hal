@@ -48,7 +48,7 @@ class App:
         classification = self.ai.classify_phrase(self.phrase)
         print("Classification: " + classification)
         requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
-
+        print(self.location.error_message)
         if self.phrase == 'goodbye' or self.phrase == 'quit':
             self.hal.quit_hal()
         elif classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:

@@ -10,8 +10,7 @@ import pickle
 
 class NaturalLanguage:
     def __init__(self):
-        self.location_features_set = []
-        self.application_features_set = []
+        self.features_set = []
         self.application_tag = "application"
         self.timezone_tag = "timezone"
         self.location_tag = "location"
@@ -24,9 +23,9 @@ class NaturalLanguage:
         self.system_tag = "system"
         self.train_hal()
 
-        random.shuffle(self.location_features_set)
-        split = int(len(self.location_features_set)) - int(len(self.location_features_set) / 4)
-        train_set, test_set = self.location_features_set[:split], self.location_features_set[split:]
+        random.shuffle(self.features_set)
+        split = int(len(self.features_set)) - int(len(self.features_set) / 4)
+        train_set, test_set = self.features_set[:split], self.features_set[split:]
 
         if os.path.isfile('request_classifier.pickle'):
             self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
@@ -47,32 +46,32 @@ class NaturalLanguage:
         :return: 
         """
         for app in os.listdir("/Applications/"):
-            self.location_features_set.append(self.train_application_request(app))
+            self.features_set.append(self.train_application_request(app))
         for country in self.get_list_countries():
-            self.location_features_set.append(self.train_location_request(country))
-            self.location_features_set.append(self.train_timezone_request(country))
-            self.location_features_set.append(self.train_distance_current_request(country))
-            self.location_features_set.append(self.train_weather_request(country))
-            self.location_features_set.append(self.train_weather_tomorrow_request(country))
-            self.location_features_set.append(self.train_elevation_request(country))
-            self.location_features_set.append(self.train_elevation_request_high(country))
-            self.location_features_set.append(self.train_elevation_request_tall(country))
-            self.location_features_set.append(self.train_different_phrased_request())
+            self.features_set.append(self.train_location_request(country))
+            self.features_set.append(self.train_timezone_request(country))
+            self.features_set.append(self.train_distance_current_request(country))
+            self.features_set.append(self.train_weather_request(country))
+            self.features_set.append(self.train_weather_tomorrow_request(country))
+            self.features_set.append(self.train_elevation_request(country))
+            self.features_set.append(self.train_elevation_request_high(country))
+            self.features_set.append(self.train_elevation_request_tall(country))
+            self.features_set.append(self.train_different_phrased_request())
         for state in self.get_state_list():
-            self.location_features_set.append(self.train_location_request(state))
-            self.location_features_set.append(self.train_timezone_request(state))
-            self.location_features_set.append(self.train_distance_current_request(state))
-            self.location_features_set.append(self.train_weather_request(state))
-            self.location_features_set.append(self.train_weather_tomorrow_request(state))
-            self.location_features_set.append(self.train_elevation_request(state))
-            self.location_features_set.append(self.train_elevation_request_high(state))
-            self.location_features_set.append(self.train_elevation_request_tall(state))
+            self.features_set.append(self.train_location_request(state))
+            self.features_set.append(self.train_timezone_request(state))
+            self.features_set.append(self.train_distance_current_request(state))
+            self.features_set.append(self.train_weather_request(state))
+            self.features_set.append(self.train_weather_tomorrow_request(state))
+            self.features_set.append(self.train_elevation_request(state))
+            self.features_set.append(self.train_elevation_request_high(state))
+            self.features_set.append(self.train_elevation_request_tall(state))
         for i in range(0, len(self.get_state_list()) - 1):
-            self.location_features_set.append(
+            self.features_set.append(
                 self.train_distance_request(self.get_state_list()[i], self.get_state_list()[i + 1]))
         for i in range(0, len(self.get_list_countries()) - 1):
-            self.location_features_set.append(self.train_distance_request(self.get_list_countries()[i],
-                                                                          self.get_list_countries()[i + 1]))
+            self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
+                                                                 self.get_list_countries()[i + 1]))
 
     def train_application_request(self, app):
         return "open " + formatter.Formatter().remove_app_suffix(app), self.application_tag
