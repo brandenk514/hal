@@ -48,7 +48,7 @@ class App:
         classification = self.ai.classify_phrase(self.phrase)
         print("Classification: " + classification)
         requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
-        print(requested_location)
+
         if self.phrase == 'goodbye' or self.phrase == 'quit':
             self.hal.quit_hal()
         elif classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
@@ -64,9 +64,7 @@ class App:
         elif classification == self.ai.timezone_tag:
             self.phrase = self.location.timezone_request(requested_location)
         elif classification == self.ai.application_tag:
-            self.phrase = self.hal.open_app_request(requested_location)
-        else:
-            self.phrase = " ".join(self.phrase)
+            self.phrase = self.hal.open_app_request(self.phrase)
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
         self.text.config(textvariable=phrase)

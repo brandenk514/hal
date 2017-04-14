@@ -65,6 +65,7 @@ class Computer:
         :return None
         """
         selected_app = formatter.Formatter().correct_input_for_app(application) + ".app"
+        print(selected_app)
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
@@ -97,26 +98,9 @@ class Computer:
         :param request: An array of strings
         :return: A string and opens the application upon success
         """
-        app = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('open') + 1))
+        r = self.f.split_sentence(request)
+        app = self.f.join_array_with_spaces(self.f.get_index_after(r, r.index('open') + 1))
         return self.open_app(app)
-
-    def ping(self, hostname):
-        """
-        :param hostname
-        commands system to ping an IP
-        """
-        host = "www." + hostname
-        return system("ping -c 1 " + host)
-
-    def ping_request(self, request):
-        """
-        Handles a ping request
-        :param request: An array of strings
-        :return: ping and ip or hostname upon success
-        """
-        ip = self.f.join_array_with_spaces(self.f.get_index_after(request, request.index('ping') + 1))
-        self.ping(ip)
-        return "Pinging " + ip + "..."
 
     def quit_hal(self):
         """
@@ -127,4 +111,4 @@ class Computer:
 
 if __name__ == '__main__':
     h = Computer()
-    h.ping("google.com")
+    h.open_app_request("open Notes")

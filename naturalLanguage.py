@@ -1,17 +1,17 @@
 from textblob.classifiers import NaiveBayesClassifier
 from textblob import Blobber
-from textblob.sentiments import NaiveBayesAnalyzer
 import textblob
 import random
 import os
-import formatter as f
+import formatter
 import geonamescache as geo
 import pickle
 
 
 class NaturalLanguage:
     def __init__(self):
-        self.features_set = []
+        self.location_features_set = []
+        self.application_features_set = []
         self.application_tag = "application"
         self.timezone_tag = "timezone"
         self.location_tag = "location"
@@ -21,18 +21,19 @@ class NaturalLanguage:
         self.current_distance_from_tag = "distance from current loc"
         self.elevation_tag = "elevation"
         self.error_tag = "error"
+        self.system_tag = "system"
         self.train_hal()
 
-        random.shuffle(self.features_set)
-        split = int(len(self.features_set)) - int(len(self.features_set) / 4)
-        train_set, test_set = self.features_set[:split], self.features_set[split:]
+        random.shuffle(self.location_features_set)
+        split = int(len(self.location_features_set)) - int(len(self.location_features_set) / 4)
+        train_set, test_set = self.location_features_set[:split], self.location_features_set[split:]
 
         if os.path.isfile('request_classifier.pickle'):
             self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
         else:
             print("Training...")
             c = NaiveBayesClassifier(train_set)
-            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=c)
+            self.classifier = Blobber(classifier=c)
             print(c.accuracy(test_set))
             print("Done")
         self.save_classifier(self.classifier)
@@ -46,35 +47,35 @@ class NaturalLanguage:
         :return: 
         """
         for app in os.listdir("/Applications/"):
-            self.features_set.append(self.train_application_request(app))
-            self.features_set.append(self.train_different_phrased_request())
+            self.location_features_set.append(self.train_application_request(app))
         for country in self.get_list_countries():
-            self.features_set.append(self.train_location_request(country))
-            self.features_set.append(self.train_timezone_request(country))
-            self.features_set.append(self.train_distance_current_request(country))
-            self.features_set.append(self.train_weather_request(country))
-            self.features_set.append(self.train_weather_tomorrow_request(country))
-            self.features_set.append(self.train_elevation_request(country))
-            self.features_set.append(self.train_elevation_request_high(country))
-            self.features_set.append(self.train_elevation_request_tall(country))
+            self.location_features_set.append(self.train_location_request(country))
+            self.location_features_set.append(self.train_timezone_request(country))
+            self.location_features_set.append(self.train_distance_current_request(country))
+            self.location_features_set.append(self.train_weather_request(country))
+            self.location_features_set.append(self.train_weather_tomorrow_request(country))
+            self.location_features_set.append(self.train_elevation_request(country))
+            self.location_features_set.append(self.train_elevation_request_high(country))
+            self.location_features_set.append(self.train_elevation_request_tall(country))
+            self.location_features_set.append(self.train_different_phrased_request())
         for state in self.get_state_list():
-            self.features_set.append(self.train_location_request(state))
-            self.features_set.append(self.train_timezone_request(state))
-            self.features_set.append(self.train_distance_current_request(state))
-            self.features_set.append(self.train_weather_request(state))
-            self.features_set.append(self.train_weather_tomorrow_request(state))
-            self.features_set.append(self.train_elevation_request(state))
-            self.features_set.append(self.train_elevation_request_high(state))
-            self.features_set.append(self.train_elevation_request_tall(state))
+            self.location_features_set.append(self.train_location_request(state))
+            self.location_features_set.append(self.train_timezone_request(state))
+            self.location_features_set.append(self.train_distance_current_request(state))
+            self.location_features_set.append(self.train_weather_request(state))
+            self.location_features_set.append(self.train_weather_tomorrow_request(state))
+            self.location_features_set.append(self.train_elevation_request(state))
+            self.location_features_set.append(self.train_elevation_request_high(state))
+            self.location_features_set.append(self.train_elevation_request_tall(state))
         for i in range(0, len(self.get_state_list()) - 1):
-            self.features_set.append(
+            self.location_features_set.append(
                 self.train_distance_request(self.get_state_list()[i], self.get_state_list()[i + 1]))
         for i in range(0, len(self.get_list_countries()) - 1):
-            self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
-                                                                 self.get_list_countries()[i + 1]))
+            self.location_features_set.append(self.train_distance_request(self.get_list_countries()[i],
+                                                                          self.get_list_countries()[i + 1]))
 
     def train_application_request(self, app):
-        return "Open " + f.Formatter().remove_app_suffix(app), self.application_tag
+        return "open " + formatter.Formatter().remove_app_suffix(app), self.application_tag
 
     def train_location_request(self, location):
         return "Where is " + location, self.location_tag
@@ -117,7 +118,9 @@ class NaturalLanguage:
             ("What is the weather like today", self.weather_tag),
             ("What timezone am I in", self.timezone_tag),
             ("Could not understand audio", self.error_tag),
-            ("where am I?", self.location_tag)
+            ("where am I?", self.location_tag),
+            ("Goodbye", self.system_tag),
+            ("quit", self.system_tag)
         ]
         i = random.randint(0, len(request) - 1)
         return request[i]
@@ -162,7 +165,10 @@ class NaturalLanguage:
     def find_location(self, textblob_phrase):
         location = []
         for p in textblob_phrase:
-            print(p)
             if p[1] == "NNP" or p[1] == "VB":
                 location.append(p[0])
         return " ".join(location)
+
+if __name__ == '__main__':
+    nl = NaturalLanguage()
+    print(nl.classify_phrase("open Xcode"))

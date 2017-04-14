@@ -178,7 +178,6 @@ class Location:
         :return:  A string consisting of distance and travel time between two locations in a given radius
         """
         locations = self.f.split_locations(self.f.split_sentence(distance_request))
-        print(locations)
         distance_matrix = self.get_distance_matrix(locations[0], locations[1])
         destination = distance_matrix['destination_addresses'][0]
         ori = distance_matrix['origin_addresses'][0]
@@ -200,17 +199,17 @@ class Location:
         """
         print(location_requested)
         distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), location_requested)
-        dest = distance_matrix['destination_addresses'][0]
+        destination = distance_matrix['destination_addresses'][0]
         rows = distance_matrix['rows'][0]
         distance = ""
         time = ""
         for e in rows['elements']:
             if e['status'] == "ZERO_RESULTS":
-                return "The distance to {0} is too far to calculate".format(dest)
+                return "The distance to {0} is too far to calculate".format(destination)
             distance = e['distance']['text']
             time = e['duration']['text']
         return "The distance to {0} from your current location is approximately {1} " \
-               "and it will take about {2} in travel time by car".format(dest, distance, time)
+               "and it will take about {2} in travel time by car".format(destination, distance, time)
 
     def location_request(self, location_requested):
         """
