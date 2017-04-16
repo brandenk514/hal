@@ -66,7 +66,10 @@ class Formatter:
         :param audio source -> usually a phrase
         :return an array of words
         """
-        return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
+        if audio is not None:
+            return unicodedata.normalize('NFKD', audio).encode('ascii', 'ignore').decode("utf-8")
+        else:
+            return ""
 
     def split_sentence(self, sentence):
         return re.sub('[^\w]', " ", sentence).split()

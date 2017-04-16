@@ -108,7 +108,3 @@ class Computer:
         :return:
         """
         sys.exit(0)
-
-if __name__ == '__main__':
-    h = Computer()
-    h.open_app_request("open Notes")
