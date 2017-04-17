@@ -55,6 +55,8 @@ class App:
                 self.phrase = self.weather.weather_request(requested_location, classification)
             elif classification == self.ai.location_tag:
                 self.phrase = self.location.location_request(requested_location)
+                if self.location.error_message != "":
+                    self.phrase = self.location.error_message
             elif classification == self.ai.elevation_tag:
                 self.phrase = self.location.elevation_request(requested_location)
             elif classification == self.ai.distance_tag:
@@ -66,7 +68,10 @@ class App:
             elif classification == self.ai.application_tag:
                 self.phrase = self.hal.open_app_request(self.phrase)
         else:
-            self.phrase = self.speech.error_message
+            if self.location.error_message != "" and self.speech.error_message != "":
+                self.phrase = "Something went very wrong!"
+            elif self.speech.error_message != "":
+                self.phrase = self.speech.error_message
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
         self.text.config(textvariable=phrase)
@@ -75,4 +80,4 @@ class App:
         self.hal.speak(self.phrase)
 
 if __name__ == '__main__':
-    hal = App()
+    App()

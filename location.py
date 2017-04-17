@@ -101,14 +101,20 @@ class Location:
         """
         :return: uses your ip to get the address as a string
         """
-        return geocoder.ip(self.ip).address
+        try:
+            return geocoder.ip(self.ip).address
+        except None:
+            return None
 
     def parse_location_for_address(self, location_list):
         """
         :param location_list: A JSON location request
         :return: the address as a string
         """
-        return location_list[1]['formatted_address']
+        if location_list is not None:
+            return location_list[1]['formatted_address']
+        else:
+            self.error_message = "I could not find the address you requested"
 
     def parse_location_for_coordinates(self, location_list):
         """
@@ -123,7 +129,7 @@ class Location:
             tuple_coordinates = tuple(float(c) for c in coordinates)
             return tuple_coordinates
         else:
-            print("Google parsing geocode HTTP Error")
+            self.error_message = "I could not find the coordinates you requested"
 
     def parse_elevation(self, elevation_list):
         """
@@ -131,16 +137,22 @@ class Location:
         :return: elevation as a float
         """
         elevation = 0.0
-        for e in elevation_list:
-            elevation = e['elevation']
-        return elevation
+        if elevation_list is not None:
+            for e in elevation_list:
+                elevation = e['elevation']
+            return elevation
+        else:
+            self.error_message = "I could not find the elevation for the location you requested"
 
     def parse_timezone(self, timezone_dict):
         """
         :parameter timezone_dict JSON request
         :return timeZoneID as a String
         """
-        return timezone_dict['timeZoneId']
+        if timezone_dict is not None:
+            return timezone_dict['timeZoneId']
+        else:
+            self.error_message = "I could not find the timezone for the location you requested"
 
     def parse_location_for_zip(self, location_list):
         """
@@ -148,14 +160,20 @@ class Location:
         :return the zipcode as a String
         """
         zip_code = ""
-        for l in location_list:
-            zip_code = l['address_components'][7]
-        code = zip_code["long_name"]
-        return code
+        if location_list is not None:
+            for l in location_list:
+                zip_code = l['address_components'][7]
+            code = zip_code["long_name"]
+            return code
+        else:
+            self.error_message = "I could not find the zip code for the location you requested"
 
     def get_timezone_offset(self, location_tuple):
-        tz = self.get_timezone(location_tuple)
-        return tz['rawOffset']
+        if location_tuple is not None:
+            tz = self.get_timezone(location_tuple)
+            return tz['rawOffset']
+        else:
+            self.error_message = "I could not find the timezone offset for the location you requested"
 
     def current_elevation(self):
         """
