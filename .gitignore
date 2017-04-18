@@ -90,3 +90,5 @@ ENV/
 
 # Serializations
 *.pickle
+*.txt
+*.rtf
