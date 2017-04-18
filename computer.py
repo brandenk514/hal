@@ -4,6 +4,7 @@ import sys
 import subprocess as sub
 import timehelper
 import formatter
+import pickle
 
 
 # A class for internal operations on the computer
@@ -26,27 +27,28 @@ class Computer:
                 self.folders.append(a)
                 self.apps.remove(a)
 
-    def speak(self, text):
+    @staticmethod
+    def speak(text):
         """
         :param text
         call to system to say text via macOS
         """
         system("Say " + text)
 
-    def sayHello(self):
+    def say_hello(self):
         """
         HAL's greetings based on time
         :return:
         """
-        greeting = "how can I help you?"
+        greeting = ", how can I help you?"
         if self.time.is_morning():
-            return "Good morning, " + greeting
+            return "Good morning" + greeting
         elif self.time.is_afternoon():
-            return "Good afternoon, " + greeting
+            return "Good afternoon" + greeting
         elif self.time.is_evening():
-            return "Good evening, " + greeting
+            return "Good evening" + greeting
         else:
-            return "Up late tonight?" + greeting
+            return "Up late tonight?"
 
     @staticmethod
     def index_directory(directory):
@@ -102,9 +104,23 @@ class Computer:
         app = self.f.join_array_with_spaces(self.f.get_index_after(r, r.index('open') + 1))
         return self.open_app(app)
 
-    def quit_hal(self):
+    @staticmethod
+    def quit_hal():
         """
         Closes and quits HAL
-        :return:
+        :return
         """
         sys.exit(0)
+
+    @staticmethod
+    def save_username(name):
+        file = open('user_date.pickle', 'wb')
+        pickle.dump(name, file, -1)
+        file.close()
+
+    @staticmethod
+    def load_username():
+        file = open('user_date.pickle', 'rb')
+        name = pickle.load(file)
+        file.close()
+        return name

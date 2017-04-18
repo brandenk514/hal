@@ -1,12 +1,12 @@
 from textblob.classifiers import NaiveBayesClassifier
 from textblob import Blobber
+from textblob.sentiments import NaiveBayesAnalyzer
 import textblob
 import random
-import os
 import formatter
 import geonamescache as geo
 import pickle
-
+import os
 
 class NaturalLanguage:
     def __init__(self):
@@ -21,6 +21,7 @@ class NaturalLanguage:
         self.elevation_tag = "elevation"
         self.error_tag = "error"
         self.system_tag = "system"
+        self.name_tag = "name"
         self.train_hal()
 
         random.shuffle(self.features_set)
@@ -32,7 +33,7 @@ class NaturalLanguage:
         else:
             print("Training...")
             c = NaiveBayesClassifier(train_set)
-            self.classifier = Blobber(classifier=c)
+            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=c)
             print(c.accuracy(test_set))
             print("Done")
         self.save_classifier(self.classifier)
@@ -47,6 +48,14 @@ class NaturalLanguage:
         """
         for app in os.listdir("/Applications/"):
             self.features_set.append(self.train_application_request(app))
+        for i in range(0, len(self.get_state_list()) - 1):
+            self.features_set.append(
+                self.train_distance_request(self.get_state_list()[i], self.get_state_list()[i + 1]))
+        for i in range(0, len(self.get_list_countries()) - 1):
+            self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
+                                                                 self.get_list_countries()[i + 1]))
+        '''for n in self.get_people_names():
+            self.features_set.append(self.train_names(n))'''
         for country in self.get_list_countries():
             self.features_set.append(self.train_location_request(country))
             self.features_set.append(self.train_timezone_request(country))
@@ -66,12 +75,6 @@ class NaturalLanguage:
             self.features_set.append(self.train_elevation_request(state))
             self.features_set.append(self.train_elevation_request_high(state))
             self.features_set.append(self.train_elevation_request_tall(state))
-        for i in range(0, len(self.get_state_list()) - 1):
-            self.features_set.append(
-                self.train_distance_request(self.get_state_list()[i], self.get_state_list()[i + 1]))
-        for i in range(0, len(self.get_list_countries()) - 1):
-            self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
-                                                                 self.get_list_countries()[i + 1]))
 
     def train_application_request(self, app):
         return "open " + formatter.Formatter().remove_app_suffix(app), self.application_tag
@@ -102,6 +105,9 @@ class NaturalLanguage:
 
     def train_elevation_request_high(self, location):
         return "How high is " + location, self.elevation_tag
+
+    def train_names(self, name):
+        return "My name is " + name, self.name_tag
 
     def train_different_phrased_request(self):
         request = [
@@ -168,6 +174,12 @@ class NaturalLanguage:
                 location.append(p[0])
         return " ".join(location)
 
-if __name__ == '__main__':
-    nl = NaturalLanguage()
-    print(nl.classify_phrase("open Xcode"))
+    def get_people_names(self):
+        with open('names.txt', 'r') as f:
+            names = [line.strip().capitalize() for line in f]
+        return names
+
+    def get_name(self, textBlob_phrase):
+        for p in textBlob_phrase:
+            if p[1] == "NNP":
+                return p[0]
