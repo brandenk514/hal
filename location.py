@@ -2,7 +2,8 @@ import googlemaps
 import geocoder
 import os
 import formatter as f
-
+import datetime
+from datetime import timedelta
 
 # A class that using the Google API python wrapper to get json request from Google APIs
 
@@ -175,6 +176,13 @@ class Location:
         else:
             self.error_message = "I could not find the timezone offset for the location you requested"
 
+    def get_dst_offset(self, location_tuple):
+        if location_tuple is not None:
+            tz = self.get_timezone(location_tuple)
+            return tz['dstOffset']
+        else:
+            self.error_message = "I could not find the dst offset for the location you requested"
+
     def current_elevation(self):
         """
         :return the elevation as a string for HAl to speak and display
@@ -191,6 +199,19 @@ class Location:
         tz = self.parse_timezone(self.get_timezone(self.parse_location_for_coordinates(
             self.get_location(self.get_current_location_from_ip()))))
         return "You are in the " + tz + " timezone"
+
+    def get_time(self, requested_location):
+        if requested_location is not None:
+            current_tz = self.parse_location_for_coordinates(self.get_location(requested_location))
+        else:
+            current_tz = self.parse_location_for_coordinates(self.get_location(self.get_current_location_from_ip()))
+        print(current_tz)
+        time_offset = self.get_timezone_offset(current_tz)
+        time_dst = self.get_dst_offset(current_tz)
+        print(time_offset)
+        print(time_dst)
+        time = datetime.datetime.utcnow() + timedelta(seconds=time_offset) + timedelta(seconds=time_dst)
+        return "{:d}:{:02d}".format(time.hour, time.minute)
 
     def current_location(self):
         """
@@ -311,7 +332,10 @@ class Location:
         :return: Timezone information for the user
         """
         if location_requested == "":
-            timezone_request = self.current_timezone()
+            timezone_request = "You are currently in " + self.current_timezone() + " and it is currently "\
+                               + self.get_time(None)
         else:
-            timezone_request = self.parse_timezone(self.get_timezone(location_requested))
+            timezone_request = location_requested + " is in the " + self.parse_timezone(self.get_timezone(
+                self.parse_location_for_coordinates(self.get_location(location_requested)))) + " and it is currently " +\
+                               self.get_time(location_requested)
         return timezone_request

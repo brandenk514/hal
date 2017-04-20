@@ -27,7 +27,7 @@ class NaturalLanguage:
         random.shuffle(self.features_set)
         split = int(len(self.features_set)) - int(len(self.features_set) / 4)
         train_set, test_set = self.features_set[:split], self.features_set[split:]
-
+        print(len(self.features_set))
         if os.path.isfile('request_classifier.pickle'):
             self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
         else:
@@ -54,8 +54,8 @@ class NaturalLanguage:
         for i in range(0, len(self.get_list_countries()) - 1):
             self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
                                                                  self.get_list_countries()[i + 1]))
-        '''for n in self.get_people_names():
-            self.features_set.append(self.train_names(n))'''
+        for n in self.get_people_names():
+            self.features_set.append(self.train_names(n))
         for country in self.get_list_countries():
             self.features_set.append(self.train_location_request(country))
             self.features_set.append(self.train_timezone_request(country))
@@ -86,7 +86,11 @@ class NaturalLanguage:
         return "What is the weather in " + location, self.weather_tag
 
     def train_timezone_request(self, location):
-        return "What timezone is " + location + "in", self.timezone_tag
+        i = random.randint(0, 1)
+        if i == 0:
+            return "What time zone is " + location + "in", self.timezone_tag
+        else:
+            return "What time is it in " + location, self.timezone_tag
 
     def train_weather_tomorrow_request(self, location):
         return "What is weather tomorrow in " + location, self.weather_tomorrow_tag
@@ -95,7 +99,11 @@ class NaturalLanguage:
         return "What is the distance between " + location_from + " and " + location_to, self.distance_tag
 
     def train_distance_current_request(self, location_to):
-        return "How far it is to " + location_to, self.current_distance_from_tag
+        i = random.randint(0, 1)
+        if i == 0:
+            return "How far it is to " + location_to, self.current_distance_from_tag
+        else:
+            return "How long will it take to get to " + location_to, self.current_distance_from_tag
 
     def train_elevation_request(self, location):
         return "What is the elevation of " + location, self.elevation_tag
@@ -122,6 +130,7 @@ class NaturalLanguage:
             ("What is the weather tomorrow", self.weather_tomorrow_tag),
             ("What is the weather like today", self.weather_tag),
             ("What timezone am I in", self.timezone_tag),
+            ("What time is it", self.timezone_tag),
             ("Could not understand audio", self.error_tag),
             ("where am I?", self.location_tag),
             ("Goodbye", self.system_tag),
@@ -159,10 +168,13 @@ class NaturalLanguage:
         Load a classifier from a pickle to speed up training
         :return: 
         """
-        file = open('request_classifier.pickle', 'rb')
-        classifier = pickle.load(file)
-        file.close()
-        return classifier
+        try:
+            file = open('request_classifier.pickle', 'rb')
+            classifier = pickle.load(file)
+            file.close()
+            return classifier
+        except EOFError:
+            return "An error occurred while loading the classifier"
 
     def phrase_to_textblob(self, phrase):
         return textblob.TextBlob(phrase).tags
@@ -183,3 +195,7 @@ class NaturalLanguage:
         for p in textBlob_phrase:
             if p[1] == "NNP":
                 return p[0]
+
+if __name__ == '__main__':
+    nl = NaturalLanguage()
+    print(nl.classify_phrase("Sarah"))
