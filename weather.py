@@ -33,7 +33,7 @@ class Weather:
         utc_dt = utc.localize(datetime.datetime.utcnow())
         current_timezone = timezone(current_tz_id)
         current_dt = current_timezone.normalize(utc_dt.astimezone(current_timezone))
-        print(date_offset)
+
         requested_date = current_dt + timedelta(days=date_offset)
         forecast = forecastio.load_forecast(os.environ.get('DARK_SKY_API_KEY'), lat_lng_tuple[0], lat_lng_tuple[1],
                                             time=requested_date, units="us")
@@ -45,6 +45,18 @@ class Weather:
         :return: the weather temperature for the current weather in a JSON request
         """
         return int(round(weather_data.currently().temperature, 0))
+
+    def get_high_temperature(self, weather_data: forecastio):
+        max_temp = 0
+        for data in weather_data.daily().data:
+            max_temp = data.d["temperatureMax"]
+        return int(round(max_temp, 0))
+
+    def get_low_temperature(self, weather_data: forecastio):
+        min_temp = 0
+        for data in weather_data.daily().data:
+            min_temp = data.d["temperatureMin"]
+        return int(round(min_temp, 0))
 
     def get_forecast(self, weather_data, **keyword_parameters):
         forecast_type = ""
@@ -82,13 +94,14 @@ class Weather:
             return "Forecast not specified"
 
     def set_future_forecast(self, weather_data, **keyword_parameters):
-        temp = self.get_current_temperature(weather_data)
+        high_temp = self.get_high_temperature(weather_data)
+        low_temp = self.get_low_temperature(weather_data)
         time_frame = ""
         condition = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type="currently"))
         if 'time_frame' in keyword_parameters:
             time_frame = keyword_parameters['time_frame']
         if time_frame == "tomorrow":
-            return "It will be " + condition + " with a temperature of " + str(temp)
+            return "It will be " + condition + " with a high of " + str(high_temp) + "°F and a low of " + str(low_temp)
         else:
             time_frame = "The future is cloudy"
         return time_frame
@@ -106,7 +119,6 @@ class Weather:
         if location_requested != "":
             location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_requested))
             weather_obj = self.get_weather_data(location_obj, date_offset=date)
-            print(weather_obj.currently())
             if date == 1:
                 return "Tomorrow in " + location_requested.capitalize() + ", " + self.set_future_forecast(
                     weather_obj, time_frame="tomorrow").lower() + "°F"
@@ -120,8 +132,7 @@ class Weather:
                 self.location.get_current_location_from_ip()))
             weather_obj = self.get_weather_data(cur_loc_obj, date_offset=date)
             if date == 1:
-                return "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow") \
-                    .lower() + "°F"
+                return "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow").lower() + "°F"
             else:
                 return self.set_current_forecast(weather_obj, type="currently") + "°F"
 
@@ -141,5 +152,6 @@ class Weather:
 
 if __name__ == '__main__':
     w = Weather()
-    loc = location.Location()
-    print(w.get_weather_at_location("San Antonio", date_offset=1))
+    l = location.Location()
+    print(w.get_low_temperature(w.get_weather_data(l.parse_location_for_coordinates(l.get_location(
+        l.get_current_location_from_ip())))))

@@ -8,6 +8,7 @@ import geonamescache as geo
 import pickle
 import os
 
+
 class NaturalLanguage:
     def __init__(self):
         self.features_set = []
@@ -27,10 +28,10 @@ class NaturalLanguage:
         random.shuffle(self.features_set)
         split = int(len(self.features_set)) - int(len(self.features_set) / 4)
         train_set, test_set = self.features_set[:split], self.features_set[split:]
-        print(len(self.features_set))
         if os.path.isfile('request_classifier.pickle'):
             self.classifier = self.load_classifier()  # Load classifier so training does not have to occur on every run
         else:
+            print(len(self.features_set))
             print("Training...")
             c = NaiveBayesClassifier(train_set)
             self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=c)
@@ -65,6 +66,8 @@ class NaturalLanguage:
             self.features_set.append(self.train_elevation_request(country))
             self.features_set.append(self.train_elevation_request_high(country))
             self.features_set.append(self.train_elevation_request_tall(country))
+            self.features_set.append(self.train_time_request(country))
+            self.features_set.append(self.train_time_distance_request(country))
             self.features_set.append(self.train_different_phrased_request())
         for state in self.get_state_list():
             self.features_set.append(self.train_location_request(state))
@@ -75,6 +78,8 @@ class NaturalLanguage:
             self.features_set.append(self.train_elevation_request(state))
             self.features_set.append(self.train_elevation_request_high(state))
             self.features_set.append(self.train_elevation_request_tall(state))
+            self.features_set.append(self.train_time_request(state))
+            self.features_set.append(self.train_time_distance_request(state))
 
     def train_application_request(self, app):
         return "open " + formatter.Formatter().remove_app_suffix(app), self.application_tag
@@ -86,11 +91,10 @@ class NaturalLanguage:
         return "What is the weather in " + location, self.weather_tag
 
     def train_timezone_request(self, location):
-        i = random.randint(0, 1)
-        if i == 0:
-            return "What time zone is " + location + "in", self.timezone_tag
-        else:
-            return "What time is it in " + location, self.timezone_tag
+        return "What time zone is " + location + "in", self.timezone_tag
+
+    def train_time_request(self, location):
+        return "What time is it in " + location, self.timezone_tag
 
     def train_weather_tomorrow_request(self, location):
         return "What is weather tomorrow in " + location, self.weather_tomorrow_tag
@@ -99,11 +103,10 @@ class NaturalLanguage:
         return "What is the distance between " + location_from + " and " + location_to, self.distance_tag
 
     def train_distance_current_request(self, location_to):
-        i = random.randint(0, 1)
-        if i == 0:
-            return "How far it is to " + location_to, self.current_distance_from_tag
-        else:
-            return "How long will it take to get to " + location_to, self.current_distance_from_tag
+        return "How far it is to " + location_to, self.current_distance_from_tag
+
+    def train_time_distance_request(self, location_to):
+        return "How long will it take to get to " + location_to, self.current_distance_from_tag
 
     def train_elevation_request(self, location):
         return "What is the elevation of " + location, self.elevation_tag
@@ -115,7 +118,11 @@ class NaturalLanguage:
         return "How high is " + location, self.elevation_tag
 
     def train_names(self, name):
-        return "My name is " + name, self.name_tag
+        i = random.randint(0, 1)
+        if i == 0:
+            return "My name is " + name, self.name_tag
+        else:
+            return "You can call me " + name, self.name_tag
 
     def train_different_phrased_request(self):
         request = [
@@ -133,6 +140,7 @@ class NaturalLanguage:
             ("What time is it", self.timezone_tag),
             ("Could not understand audio", self.error_tag),
             ("where am I?", self.location_tag),
+            ("What is my name?", self.name_tag),
             ("Goodbye", self.system_tag),
             ("quit", self.system_tag)
         ]
@@ -195,7 +203,3 @@ class NaturalLanguage:
         for p in textBlob_phrase:
             if p[1] == "NNP":
                 return p[0]
-
-if __name__ == '__main__':
-    nl = NaturalLanguage()
-    print(nl.classify_phrase("Sarah"))

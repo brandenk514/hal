@@ -14,11 +14,14 @@ class Computer:
         """
         Construct a computer object and indexes applications on start up
         """
-        self.user_name = ""
         self.name = "Hal"
         self.time = timehelper.TimeHelper()
         self.f = formatter.Formatter()
 
+        if os.path.isfile('user_data.pickle'):
+            self.user_name = self.load_username()
+        else:
+            self.user_name = ""
         self.apps = self.index_directory("/Applications/")  # Index folders on startup
         self.folders = []
         self.utilities = self.index_directory("/Applications/Utilities/")
@@ -42,13 +45,13 @@ class Computer:
         """
         greeting = ", how can I help you?"
         if self.time.is_morning():
-            return "Good morning" + greeting
+            return "Good morning " + self.user_name + greeting
         elif self.time.is_afternoon():
-            return "Good afternoon" + greeting
+            return "Good afternoon " + self.user_name + greeting
         elif self.time.is_evening():
-            return "Good evening" + greeting
+            return "Good evening " + self.user_name + greeting
         else:
-            return "Up late tonight?"
+            return "Good to see you again, " + self.user_name
 
     @staticmethod
     def index_directory(directory):
@@ -67,7 +70,6 @@ class Computer:
         :return None
         """
         selected_app = formatter.Formatter().correct_input_for_app(application) + ".app"
-        print(selected_app)
         directory = "/Applications/"
         folders = self.folders
         apps = self.apps
@@ -114,13 +116,13 @@ class Computer:
 
     @staticmethod
     def save_username(name):
-        file = open('user_date.pickle', 'wb')
+        file = open('user_data.pickle', 'wb')
         pickle.dump(name, file, -1)
         file.close()
 
     @staticmethod
     def load_username():
-        file = open('user_date.pickle', 'rb')
+        file = open('user_data.pickle', 'rb')
         name = pickle.load(file)
         file.close()
         return name

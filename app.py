@@ -17,7 +17,7 @@ class App:
         self.location = location.Location()
         self.formatter = f.Formatter()
         self.phrase = self.computer.say_hello()
-        self.start_up = False
+        self.start_up = True
 
         # Set up the window
         self.window = tkinter.Tk()
@@ -50,7 +50,7 @@ class App:
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
         print("Classification: " + classification)
-        if not self.start_up:
+        if self.computer.user_name != "":
             if self.speech.error_message == "":
                 requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
                 if self.phrase == 'goodbye' or self.phrase == 'quit':
@@ -80,10 +80,16 @@ class App:
                     self.phrase = self.speech.error_message
                     self.speech.error_message = ""
         else:
-            if classification == self.ai.name_tag:
-                name_request = self.ai.phrase_to_textblob(self.phrase)
-                self.computer.user_name = self.ai.get_name(name_request)
-                self.phrase = "Your name is " + self.computer.user_name
+            if classification == self.ai.name_tag and self.start_up:
+                try:
+                    name_request = self.ai.phrase_to_textblob(self.phrase)
+                    self.computer.user_name = self.ai.get_name(name_request)
+                    self.phrase = self.computer.user_name + ", I like that name"
+                    self.computer.save_username(self.computer.user_name)
+                    self.start_up = False
+                except TypeError:
+                    self.start_up = True
+                    return "I did not quite get your name"
 
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
@@ -93,12 +99,17 @@ class App:
         self.computer.speak(self.phrase)
 
     def get_username(self):
-        p = "My name is Hal. What should I call you?"
+        print(self.computer.user_name)
+        if self.computer.user_name == "":
+            p = "My name is Hal. What should I call you?"
+        else:
+            p = self.computer.say_hello()
         phrase = tkinter.StringVar()
         phrase.set(p)
         self.text.config(textvariable=phrase)
         self.window.update()
         self.computer.speak(p)
+
 
 if __name__ == '__main__':
     hal = App()
