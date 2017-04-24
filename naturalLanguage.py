@@ -139,6 +139,7 @@ class NaturalLanguage:
             ("What timezone am I in", self.timezone_tag),
             ("What time is it", self.timezone_tag),
             ("Could not understand audio", self.error_tag),
+            ("what is the temperature", self.weather_tag),
             ("where am I?", self.location_tag),
             ("What is my name?", self.name_tag),
             ("Goodbye", self.system_tag),
