@@ -49,9 +49,11 @@ class App:
         self.phrase = self.formatter.parse_audio_to_string(self.speech.listen)
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
+        prob = self.ai.classifier_prob(self.phrase, classification)
         print("Classification: " + classification)
+        print("Prob: " + str(prob))
         if self.computer.user_name != "":
-            if self.speech.error_message == "":
+            if self.phrase != "" and self.speech.error_message == "" and prob > .95:
                 requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
                 if self.phrase == 'goodbye' or self.phrase == 'quit':
                     self.computer.quit_hal()
@@ -72,7 +74,9 @@ class App:
                 elif classification == self.ai.application_tag:
                     self.phrase = self.computer.open_app_request(self.phrase)
             else:
-                if self.location.error_message != "" and self.speech.error_message != "":
+                if not self.ai.classifier_prob(self.phrase, classification) > .95 or self.phrase == "":
+                    self.phrase = "I am not sure what you meant"
+                elif self.location.error_message != "" and self.speech.error_message != "":
                     self.phrase = "Something went very wrong!"
                     self.location.error_message = ""
                     self.speech.error_message = ""

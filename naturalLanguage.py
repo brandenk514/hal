@@ -1,6 +1,4 @@
 from textblob.classifiers import NaiveBayesClassifier
-from textblob import Blobber
-from textblob.sentiments import NaiveBayesAnalyzer
 import textblob
 import random
 import formatter
@@ -20,7 +18,6 @@ class NaturalLanguage:
         self.distance_tag = "distance"
         self.current_distance_from_tag = "distance from current loc"
         self.elevation_tag = "elevation"
-        self.error_tag = "error"
         self.system_tag = "system"
         self.name_tag = "name"
         self.train_hal()
@@ -33,14 +30,16 @@ class NaturalLanguage:
         else:
             print(len(self.features_set))
             print("Training...")
-            c = NaiveBayesClassifier(train_set)
-            self.classifier = Blobber(analyzer=NaiveBayesAnalyzer(), classifier=c)
-            print(c.accuracy(test_set))
+            self.classifier = NaiveBayesClassifier(train_set)
+            print(self.classifier.accuracy(test_set))
             print("Done")
         self.save_classifier(self.classifier)
 
     def classify_phrase(self, tb_phrase):
-        return self.classifier(tb_phrase).classify()
+        return self.classifier.classify(tb_phrase)
+
+    def classifier_prob(self, phrase, classification):
+        return self.classifier.prob_classify(phrase).prob(classification)
 
     def train_hal(self):
         """
@@ -57,6 +56,7 @@ class NaturalLanguage:
                                                                  self.get_list_countries()[i + 1]))
         for n in self.get_people_names():
             self.features_set.append(self.train_names(n))
+            self.features_set.append(self.train_different_phrased_request())
         for country in self.get_list_countries():
             self.features_set.append(self.train_location_request(country))
             self.features_set.append(self.train_timezone_request(country))
@@ -133,12 +133,11 @@ class NaturalLanguage:
             ("What is the weather", self.weather_tag),
             ("What is the weather today", self.weather_tag),
             ("How cold is it outside", self.weather_tag),
-            ("How hot is it going to bree today", self.weather_tag),
+            ("How hot is it going to be today", self.weather_tag),
             ("What is the weather tomorrow", self.weather_tomorrow_tag),
             ("What is the weather like today", self.weather_tag),
             ("What timezone am I in", self.timezone_tag),
             ("What time is it", self.timezone_tag),
-            ("Could not understand audio", self.error_tag),
             ("what is the temperature", self.weather_tag),
             ("where am I?", self.location_tag),
             ("What is my name?", self.name_tag),
@@ -201,6 +200,19 @@ class NaturalLanguage:
         return names
 
     def get_name(self, textBlob_phrase):
-        for p in textBlob_phrase:
-            if p[1] == "NNP":
+        if len(textBlob_phrase) == 1:
+            for p in textBlob_phrase:
                 return p[0]
+        else:
+            for p in textBlob_phrase:
+                print(p)
+                if p[1] == "NNP":
+                    return p[0]
+
+if __name__ == '__main__':
+    nl = NaturalLanguage()
+    p = "What is the"
+    c = nl.classify_phrase(p)
+    print(c)
+    print(nl.classifier_prob(p, c))
+    print(nl.classifier_prob(p, c) > .95)

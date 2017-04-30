@@ -205,11 +205,8 @@ class Location:
             current_tz = self.parse_location_for_coordinates(self.get_location(requested_location))
         else:
             current_tz = self.parse_location_for_coordinates(self.get_location(self.get_current_location_from_ip()))
-        print(current_tz)
         time_offset = self.get_timezone_offset(current_tz)
         time_dst = self.get_dst_offset(current_tz)
-        print(time_offset)
-        print(time_dst)
         time = datetime.datetime.utcnow() + timedelta(seconds=time_offset) + timedelta(seconds=time_dst)
         return "{:d}:{:02d}".format(time.hour, time.minute)
 
@@ -273,7 +270,6 @@ class Location:
         :param location_requested: A location as a string
         :return:  A string consisting of distance and travel time between a location and your current location
         """
-        print(location_requested)
         distance_matrix = self.get_distance_matrix(self.get_current_location_from_ip(), location_requested)
         destination = distance_matrix['destination_addresses'][0]
         rows = distance_matrix['rows'][0]
