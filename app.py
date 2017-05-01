@@ -18,6 +18,7 @@ class App:
         self.formatter = f.Formatter()
         self.phrase = self.computer.say_hello()
         self.start_up = True
+        self.prob_threshold = .90
 
         # Set up the window
         self.window = tkinter.Tk()
@@ -53,7 +54,7 @@ class App:
         print("Classification: " + classification)
         print("Prob: " + str(prob))
         if self.computer.user_name != "":
-            if self.phrase != "" and self.speech.error_message == "" and prob > .95:
+            if self.phrase != "" and self.speech.error_message == "" and prob > self.prob_threshold:
                 requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
                 if self.phrase == 'goodbye' or self.phrase == 'quit':
                     self.computer.quit_hal()
@@ -74,14 +75,14 @@ class App:
                 elif classification == self.ai.application_tag:
                     self.phrase = self.computer.open_app_request(self.phrase)
             else:
-                if not self.ai.classifier_prob(self.phrase, classification) > .95 or self.phrase == "":
+                if not self.ai.classifier_prob(self.phrase, classification) > self.prob_threshold or self.phrase == "":
                     self.phrase = "I am not sure what you meant"
-                elif self.location.error_message != "" and self.speech.error_message != "":
-                    self.phrase = "Something went very wrong!"
-                    self.location.error_message = ""
-                    self.speech.error_message = ""
                 elif self.speech.error_message != "":
                     self.phrase = self.speech.error_message
+                    self.speech.error_message = ""
+                else:
+                    self.phrase = "Something went very wrong!"
+                    self.location.error_message = ""
                     self.speech.error_message = ""
         else:
             if classification == self.ai.name_tag and self.start_up:

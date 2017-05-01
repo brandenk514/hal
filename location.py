@@ -328,10 +328,10 @@ class Location:
         :return: Timezone information for the user
         """
         if location_requested == "":
-            timezone_request = "You are currently in " + self.current_timezone() + " and it is currently "\
+            timezone_request = "You are currently in " + self.current_timezone() + " time zone and it is currently "\
                                + self.get_time(None)
         else:
             timezone_request = location_requested + " is in the " + self.parse_timezone(self.get_timezone(
-                self.parse_location_for_coordinates(self.get_location(location_requested)))) + " and it is currently " +\
-                               self.get_time(location_requested)
+                self.parse_location_for_coordinates(self.get_location(location_requested)))) \
+                               + " time zone and it is currently " + self.get_time(location_requested)
         return timezone_request

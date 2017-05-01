@@ -54,6 +54,7 @@ class NaturalLanguage:
         for i in range(0, len(self.get_list_countries()) - 1):
             self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
                                                                  self.get_list_countries()[i + 1]))
+            self.features_set.append(self.train_different_phrased_request())
         for n in self.get_people_names():
             self.features_set.append(self.train_names(n))
             self.features_set.append(self.train_different_phrased_request())
