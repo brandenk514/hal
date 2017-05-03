@@ -36,9 +36,20 @@ class NaturalLanguage:
         self.save_classifier(self.classifier)
 
     def classify_phrase(self, tb_phrase):
+        """
+        Classifies a string
+        :param tb_phrase: 
+        :return: 
+        """
         return self.classifier.classify(tb_phrase)
 
     def classifier_prob(self, phrase, classification):
+        """
+        Returns the probability of a string being classified as a given classification
+        :param phrase: 
+        :param classification: 
+        :return: 
+        """
         return self.classifier.prob_classify(phrase).prob(classification)
 
     def train_hal(self):
@@ -54,10 +65,11 @@ class NaturalLanguage:
         for i in range(0, len(self.get_list_countries()) - 1):
             self.features_set.append(self.train_distance_request(self.get_list_countries()[i],
                                                                  self.get_list_countries()[i + 1]))
-            self.features_set.append(self.train_different_phrased_request())
+            self.features_set.append(self.train_distance_request_from(self.get_list_countries()[i],
+                                                                      self.get_list_countries()[i + 1]))
+            self.features_set.append(self.train_weather_tomorrow_request(self.get_list_countries()[i]))
         for n in self.get_people_names():
             self.features_set.append(self.train_names(n))
-            self.features_set.append(self.train_different_phrased_request())
         for country in self.get_list_countries():
             self.features_set.append(self.train_location_request(country))
             self.features_set.append(self.train_timezone_request(country))
@@ -69,7 +81,6 @@ class NaturalLanguage:
             self.features_set.append(self.train_elevation_request_tall(country))
             self.features_set.append(self.train_time_request(country))
             self.features_set.append(self.train_time_distance_request(country))
-            self.features_set.append(self.train_different_phrased_request())
         for state in self.get_state_list():
             self.features_set.append(self.train_location_request(state))
             self.features_set.append(self.train_timezone_request(state))
@@ -81,6 +92,8 @@ class NaturalLanguage:
             self.features_set.append(self.train_elevation_request_tall(state))
             self.features_set.append(self.train_time_request(state))
             self.features_set.append(self.train_time_distance_request(state))
+            for i in self.train_different_phrased_request():
+                self.features_set.append(i)
 
     def train_application_request(self, app):
         return "open " + formatter.Formatter().remove_app_suffix(app), self.application_tag
@@ -92,7 +105,7 @@ class NaturalLanguage:
         return "What is the weather in " + location, self.weather_tag
 
     def train_timezone_request(self, location):
-        return "What time zone is " + location + "in", self.timezone_tag
+        return "What time zone is " + location + " in", self.timezone_tag
 
     def train_time_request(self, location):
         return "What time is it in " + location, self.timezone_tag
@@ -102,6 +115,9 @@ class NaturalLanguage:
 
     def train_distance_request(self, location_from, location_to):
         return "What is the distance between " + location_from + " and " + location_to, self.distance_tag
+
+    def train_distance_request_from(self, location_from, location_to):
+        return "What is the distance from " + location_from + " to " + location_to, self.distance_tag
 
     def train_distance_current_request(self, location_to):
         return "How far it is to " + location_to, self.current_distance_from_tag
@@ -141,12 +157,10 @@ class NaturalLanguage:
             ("What time is it", self.timezone_tag),
             ("what is the temperature", self.weather_tag),
             ("where am I?", self.location_tag),
-            ("What is my name?", self.name_tag),
-            ("Goodbye", self.system_tag),
-            ("quit", self.system_tag)
+            ("What is my name?", self.name_tag)
         ]
-        i = random.randint(0, len(request) - 1)
-        return request[i]
+        # i = random.randint(0, len(request) - 1)
+        return request  # [i]
 
     def get_list_countries(self):
         gc = geo.GeonamesCache().get_countries_by_names()
@@ -189,6 +203,11 @@ class NaturalLanguage:
         return textblob.TextBlob(phrase).tags
 
     def find_location(self, textblob_phrase):
+        """
+        Takes in a tagged textblob phrase 
+        :param textblob_phrase: 
+        :return: the location with "NNP" or "VB" tagged to it
+        """
         location = []
         for p in textblob_phrase:
             if p[1] == "NNP" or p[1] == "VB":
@@ -201,19 +220,24 @@ class NaturalLanguage:
         return names
 
     def get_name(self, textBlob_phrase):
+        """
+        Takes in a tagged textblob phrase 
+        :param textBlob_phrase: 
+        :return: the word with "NNP" tagged to it
+        """
+
         if len(textBlob_phrase) == 1:
             for p in textBlob_phrase:
                 return p[0]
         else:
             for p in textBlob_phrase:
-                print(p)
                 if p[1] == "NNP":
                     return p[0]
 
 if __name__ == '__main__':
     nl = NaturalLanguage()
-    p = "What is the"
+    p = "What is the distance from Los Angeles to New York"
+    t = nl.phrase_to_textblob(p)
     c = nl.classify_phrase(p)
-    print(c)
-    print(nl.classifier_prob(p, c))
-    print(nl.classifier_prob(p, c) > .95)
+    print(t)
+

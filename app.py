@@ -50,15 +50,30 @@ class App:
         self.phrase = self.formatter.parse_audio_to_string(self.speech.listen)
         print("Request: " + self.phrase)
         classification = self.ai.classify_phrase(self.phrase)
-        prob = self.ai.classifier_prob(self.phrase, classification)
         print("Classification: " + classification)
+        prob = self.ai.classifier_prob(self.phrase, classification)
         print("Prob: " + str(prob))
-        if self.computer.user_name != "":
-            if self.phrase != "" and self.speech.error_message == "" and prob > self.prob_threshold:
-                requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))
-                if self.phrase == 'goodbye' or self.phrase == 'quit':
-                    self.computer.quit_hal()
-                elif classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
+        if self.speech.error_message != "":
+            self.phrase = self.speech.error_message
+            self.speech.error_message = ""
+        else:
+            if self.phrase == 'goodbye' or self.phrase == 'quit':
+                self.computer.quit_hal()
+            elif classification == self.ai.name_tag and self.start_up:
+                try:
+                    name_request = self.ai.phrase_to_textblob(self.phrase)
+                    self.computer.user_name = self.ai.get_name(name_request)
+                    self.phrase = self.computer.user_name + ", I like that name"
+                    self.computer.save_username(self.computer.user_name)
+                    self.start_up = False
+                except TypeError:
+                    self.start_up = True
+                    self.phrase = "I did not quite get your name"
+            elif prob < self.prob_threshold or self.phrase == "":
+                self.phrase = "I am not sure what you meant"
+            else:
+                requested_location = self.ai.find_location(self.ai.phrase_to_textblob(self.phrase))  # location
+                if classification == self.ai.weather_tag or classification == self.ai.weather_tomorrow_tag:
                     self.phrase = self.weather.weather_request(requested_location, classification)
                 elif classification == self.ai.location_tag:
                     self.phrase = self.location.location_request(requested_location)
@@ -74,27 +89,6 @@ class App:
                     self.phrase = self.location.timezone_request(requested_location)
                 elif classification == self.ai.application_tag:
                     self.phrase = self.computer.open_app_request(self.phrase)
-            else:
-                if not self.ai.classifier_prob(self.phrase, classification) > self.prob_threshold or self.phrase == "":
-                    self.phrase = "I am not sure what you meant"
-                elif self.speech.error_message != "":
-                    self.phrase = self.speech.error_message
-                    self.speech.error_message = ""
-                else:
-                    self.phrase = "Something went very wrong!"
-                    self.location.error_message = ""
-                    self.speech.error_message = ""
-        else:
-            if classification == self.ai.name_tag and self.start_up:
-                try:
-                    name_request = self.ai.phrase_to_textblob(self.phrase)
-                    self.computer.user_name = self.ai.get_name(name_request)
-                    self.phrase = self.computer.user_name + ", I like that name"
-                    self.computer.save_username(self.computer.user_name)
-                    self.start_up = False
-                except TypeError:
-                    self.start_up = True
-                    return "I did not quite get your name"
 
         phrase = tkinter.StringVar()
         phrase.set(self.phrase)
@@ -104,7 +98,6 @@ class App:
         self.computer.speak(self.phrase)
 
     def get_username(self):
-        print(self.computer.user_name)
         if self.computer.user_name == "":
             p = "My name is Hal. What should I call you?"
         else:
