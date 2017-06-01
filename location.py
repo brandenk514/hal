@@ -7,6 +7,7 @@ from datetime import timedelta
 
 # A class that using the Google API python wrapper to get json request from Google APIs
 
+
 class Location:
     def __init__(self):
         """

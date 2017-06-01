@@ -13,7 +13,8 @@ class Formatter:
         """
         self.title = "Formatter"
 
-    def strip_punctuation(self, s: str):
+    @staticmethod
+    def strip_punctuation(s: str):
         """
         :param s:
         :return: returns a string without punctuation
@@ -22,7 +23,8 @@ class Formatter:
             s = s.replace(c, "")
         return s
 
-    def to_lower(self, s: str):
+    @staticmethod
+    def to_lower(s: str):
         """
         :param s:
         :return: returns string in a lowercase
@@ -42,10 +44,11 @@ class Formatter:
             s = "No location given"
         return s
 
-    def correct_input_for_app(self, input_text):
+    @staticmethod
+    def correct_input_for_app(input_text):
         """
         :param input_text as string
-        :returna string with proper capitalization for application search
+        :return a string with proper capitalization for application search
         """
         final = []
         words = re.sub('[^\w]', " ", input_text).split()
@@ -53,7 +56,8 @@ class Formatter:
             final.append(w.capitalize())
         return ' '.join(final)
 
-    def join_array_with_spaces(self, location_array):
+    @staticmethod
+    def join_array_with_spaces(location_array):
         """
         Joins an array as a sentence with spaces
         :param location_array:
@@ -61,7 +65,8 @@ class Formatter:
         """
         return " ".join(location_array)
 
-    def parse_audio_to_string(self, audio):
+    @staticmethod
+    def parse_audio_to_string(audio):
         """
         :param audio source -> usually a phrase
         :return an array of words
@@ -71,10 +76,12 @@ class Formatter:
         else:
             return ""
 
-    def split_sentence(self, sentence):
+    @staticmethod
+    def split_sentence(sentence):
         return re.sub('[^\w]', " ", sentence).split()
 
-    def remove_app_suffix(self, app, there=re.compile(re.escape('.') + '.*')):
+    @staticmethod
+    def remove_app_suffix(app, there=re.compile(re.escape('.') + '.*')):
         """
         Removes ".app" from string for speech
         :param app: Application
@@ -83,7 +90,8 @@ class Formatter:
         """
         return there.sub('', app)
 
-    def get_index_after(self, request, index):
+    @staticmethod
+    def get_index_after(request, index):
         """
         Gets values of an array between two indices
         :param request: Array of Strings
