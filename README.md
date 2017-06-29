@@ -34,4 +34,4 @@ Install the latest version
 
 ### Feedback
 Please feel free to give any feedback on this project. 
-If you find any bugs or any enhancements to recommend, please send some of your comments/suggestions to the[Github Issues Page](https://github.com/brandenk514/hal/issues).
+If you find any bugs or any enhancements to recommend, please send some of your comments/suggestions to the [Github Issues Page](https://github.com/brandenk514/hal/issues).
