@@ -92,3 +92,4 @@ ENV/
 *.pickle
 *.txt
 *.rtf
+*.json

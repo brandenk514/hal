@@ -1,29 +1,69 @@
-import speech_recognition
+import pyaudio
+import io
+import os
+from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
 
 
 class GoogleSpeech:
-    def __init__(self):
-        """
-        Constructs a new googleSpeech object
-        """
-        self.recognizer = speech_recognition.Recognizer()
-        self.error_message = ""
 
-    @property
-    def listen(self):
+    def create_audio_file(self):
         """
-        :param self
-        This is a wrapper method to the Speech_Recognition package
-        found @ https://gist.github.com/GGulati/1ebaeaaa7f7408647fef#file-jarvis-py
+        creates an .raw audio to be analyzed by Google Cloud Speech API
+        :return:
         """
-        try:
-            with speech_recognition.Microphone() as source:
-                self.recognizer.adjust_for_ambient_noise(source)
-                audio = self.recognizer.listen(source, timeout=10, phrase_time_limit=None)
-            return self.recognizer.recognize_google(audio)
-        except speech_recognition.WaitTimeoutError:
-            self.error_message = "I could not hear you!"
-        except speech_recognition.UnknownValueError:
-            self.error_message = "I did not quite get that"
-        except speech_recognition.RequestError as e:
-            self.error_message = "Recognition Error: {0}".format(e)
+        audio_format = pyaudio.paInt16
+
+        channels = 1
+        sample_rate = 16000
+        chunk = int(sample_rate / 10)
+        seconds = 5
+
+        audio = pyaudio.PyAudio()
+
+        # start Recording
+        stream = audio.open(format=audio_format, channels=channels,
+                            rate=sample_rate, input=True,
+                            frames_per_buffer=chunk)
+        print("recording...")
+        frames = []
+
+        for i in range(0, int(sample_rate / chunk * seconds)):
+            data = stream.read(chunk)
+            frames.append(data)
+        print("finished recording")
+
+        # stop Recording
+        stream.stop_stream()
+        stream.close()
+        audio.terminate()
+
+        file = open("/Users/brandenkaestner/coding/PycharmProjects/hal/resources/audio.raw", "wb")
+        file.write(b''.join(frames))
+        file.close()
+
+    def run_quickstart(self):
+        # Instantiates a client
+        client = speech.SpeechClient()
+
+        # The name of the audio file to transcribe
+        file_name = os.path.join(
+            os.path.dirname(__file__),
+            'resources',
+            'audio.raw')
+
+        # Loads the audio into memory
+        with io.open(file_name, 'rb') as audio_file:
+            content = audio_file.read()
+            audio = types.RecognitionAudio(content=content)
+
+        config = types.RecognitionConfig(
+            encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code='en-US')
+        # Detects speech in the audio file
+        response = client.recognize(config, audio)
+
+        for result in response.results:
+            print('Transcript: {}'.format(result.alternatives[0].transcript))
