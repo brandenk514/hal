@@ -6,17 +6,21 @@ from google.cloud.language import types
 
 class GoogleNaturalLanguage:
 
-    def analyze_request(self, text):
+    def classify_request(self, text):
         # Instantiates a client
         client = language.LanguageServiceClient()
 
         # The text to analyze
         document = types.Document(
             content=text,
-            type=enums.Document.Type.PLAIN_TEXT)
+            type=language.enums.Document.Type.PLAIN_TEXT)
 
-        # Detects the sentiment of the text
-        sentiment = client.analyze_sentiment(document=document).document_sentiment
+        # Detects the response of the text
+        response = client.analyze_entities(document, encoding_type='UTF32', )
 
-        print('Text: {}'.format(text))
-        print('Sentiment: {}, {}'.format(sentiment.score, sentiment.magnitude))
+        for entity in response.entities:
+            print(u'=' * 20)
+            print('name: {0}'.format(entity.name))
+            print('type: {0}'.format(entity.type))
+            print('metadata: {0}'.format(entity.metadata))
+            print('salience: {0}'.format(entity.salience))

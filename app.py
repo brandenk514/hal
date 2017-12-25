@@ -21,4 +21,6 @@ class App:
 
 
 if __name__ == '__main__':
-    hal = App()
+    hal = googlenaturallangauge.GoogleNaturalLanguage()
+    speech = googlespeech.GoogleSpeech()
+    hal.classify_request("What is the weather in baltimore tomorrow ?")
