@@ -17,10 +17,12 @@ class App:
         self.formatter = f.Formatter()
         self.phrase = self.computer.say_hello()
         self.start_up = True
-        self.prob_threshold = .90
 
 
 if __name__ == '__main__':
-    hal = googlenaturallangauge.GoogleNaturalLanguage()
     speech = googlespeech.GoogleSpeech()
-    hal.classify_request("What is the weather in baltimore tomorrow ?")
+    speech.create_audio_file()
+    hal = googlenaturallangauge.GoogleNaturalLanguage(speech.analyze_audio())
+    hal.classify_request()
+
+    # Need to add error checks for no input.

@@ -43,7 +43,7 @@ class GoogleSpeech:
         file.write(b''.join(frames))
         file.close()
 
-    def run_quickstart(self):
+    def analyze_audio(self):
         # Instantiates a client
         client = speech.SpeechClient()
 
@@ -66,4 +66,6 @@ class GoogleSpeech:
         response = client.recognize(config, audio)
 
         for result in response.results:
+            print(type(result.alternatives[0].transcript))
             print('Transcript: {}'.format(result.alternatives[0].transcript))
+            return result.alternatives[0].transcript
