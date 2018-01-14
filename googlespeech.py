@@ -32,12 +32,12 @@ class GoogleSpeech:
         for i in range(0, int(sample_rate / chunk * seconds)):
             data = stream.read(chunk)
             frames.append(data)
-        print("finished recording")
 
         # stop Recording
         stream.stop_stream()
         stream.close()
         audio.terminate()
+        print("finished recording")
 
         file = open("/Users/brandenkaestner/coding/PycharmProjects/hal/resources/audio.raw", "wb")
         file.write(b''.join(frames))

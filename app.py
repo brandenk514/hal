@@ -24,5 +24,6 @@ if __name__ == '__main__':
     speech.create_audio_file()
     hal = googlenaturallangauge.GoogleNaturalLanguage(speech.analyze_audio())
     hal.classify_request()
+    hal.analyze_syntax()
 
     # Need to add error checks for no input.
