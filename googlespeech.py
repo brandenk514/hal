@@ -8,6 +8,9 @@ from google.cloud.speech import types
 
 class GoogleSpeech:
 
+    def __init__(self):
+        self.create_audio_file()
+
     def create_audio_file(self):
         """
         creates an .raw audio to be analyzed by Google Cloud Speech API
@@ -44,6 +47,10 @@ class GoogleSpeech:
         file.close()
 
     def analyze_audio(self):
+        """
+        Takes audio and puts into string
+        :return:
+        """
         # Instantiates a client
         client = speech.SpeechClient()
 
@@ -66,6 +73,6 @@ class GoogleSpeech:
         response = client.recognize(config, audio)
 
         for result in response.results:
-            print(type(result.alternatives[0].transcript))
-            print('Transcript: {}'.format(result.alternatives[0].transcript))
+            # print(type(result.alternatives[0].transcript))
+            # print('Transcript: {}'.format(result.alternatives[0].transcript))
             return result.alternatives[0].transcript

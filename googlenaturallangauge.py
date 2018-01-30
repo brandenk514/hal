@@ -19,7 +19,7 @@ class GoogleNaturalLanguage:
     def classify_request(self):
 
         """
-        Take in a sentence and returns the classification of important entities
+        Take in a string and returns the classification of important entities
         :return:
         """
 
@@ -41,14 +41,14 @@ class GoogleNaturalLanguage:
             for entity in response.entities:
                 self.classified_text['name'] = entity.name
                 self.classified_text['type'] = entity.type
-                print(self.classified_text)
+                # print(self.classified_text)
             return self.classified_text
         except:
             print("Classification error")
 
     def analyze_syntax(self):
         """
-        Takes in a sentence and returns the syntax from Google API
+        Takes in a string and returns the syntax from Google API
         :return:
         """
 
@@ -60,9 +60,9 @@ class GoogleNaturalLanguage:
                        'PRON', 'PRT', 'PUNCT', 'VERB', 'X', 'AFFIX')
 
             for token in tokens:
-                print(u'{}: {}'.format(pos_tag[token.part_of_speech.tag], token.text.content))
+                # print(u'{}: {}'.format(pos_tag[token.part_of_speech.tag], token.text.content))
                 self.syntax_tokens.append((pos_tag[token.part_of_speech.tag], token.text.content))
-            print(self.syntax_tokens)
-            return self.syntax_tokens
+                # print(self.syntax_tokens)
+                return self.syntax_tokens
         except:
             print("Analyzing syntax error")
