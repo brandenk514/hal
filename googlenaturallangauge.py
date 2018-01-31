@@ -13,9 +13,6 @@ class GoogleNaturalLanguage:
             content=text,
             type=language.enums.Document.Type.PLAIN_TEXT)
 
-        self.classified_text = [{}]
-        self.syntax_tokens = [()]
-
     def classify_request(self):
 
         """
@@ -38,10 +35,12 @@ class GoogleNaturalLanguage:
             7 = 'OTHER'
             """
 
+            classified_text = [{}]
+
             for entity in response.entities:
-                self.classified_text.append(entity)
-            self.classified_text.pop(0)
-            return self.classified_text
+                classified_text.append(entity)
+            classified_text.pop(0)
+            return classified_text
         except:
             print("Classification error")
 
@@ -58,10 +57,12 @@ class GoogleNaturalLanguage:
             pos_tag = ('UNKNOWN', 'ADJ', 'ADP', 'ADV', 'CONJ', 'DET', 'NOUN', 'NUM',
                        'PRON', 'PRT', 'PUNCT', 'VERB', 'X', 'AFFIX')
 
+            syntax_tokens = [()]
+
             for token in tokens:
                 # print(u'{}: {}'.format(pos_tag[token.part_of_speech.tag], token.text.content))
-                self.syntax_tokens.append((pos_tag[token.part_of_speech.tag], token.text.content))
-            self.syntax_tokens.pop(0)
-            return self.syntax_tokens
+                syntax_tokens.append((pos_tag[token.part_of_speech.tag], token.text.content))
+            syntax_tokens.pop(0)
+            return syntax_tokens
         except:
             print("Analyzing syntax error")
