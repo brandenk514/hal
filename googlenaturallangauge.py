@@ -13,7 +13,7 @@ class GoogleNaturalLanguage:
             content=text,
             type=language.enums.Document.Type.PLAIN_TEXT)
 
-        self.classified_text = {}
+        self.classified_text = [{}]
         self.syntax_tokens = [()]
 
     def classify_request(self):
@@ -39,9 +39,8 @@ class GoogleNaturalLanguage:
             """
 
             for entity in response.entities:
-                self.classified_text['name'] = entity.name
-                self.classified_text['type'] = entity.type
-                # print(self.classified_text)
+                self.classified_text.append(entity)
+            self.classified_text.pop(0)
             return self.classified_text
         except:
             print("Classification error")
@@ -62,7 +61,7 @@ class GoogleNaturalLanguage:
             for token in tokens:
                 # print(u'{}: {}'.format(pos_tag[token.part_of_speech.tag], token.text.content))
                 self.syntax_tokens.append((pos_tag[token.part_of_speech.tag], token.text.content))
-                # print(self.syntax_tokens)
-                return self.syntax_tokens
+            self.syntax_tokens.pop(0)
+            return self.syntax_tokens
         except:
             print("Analyzing syntax error")

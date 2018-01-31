@@ -20,6 +20,5 @@ class App:
 if __name__ == '__main__':
     hal = App()
     hal.request.set_request_vars()
-    print(hal.request.name)
 
     # Need to add error checks for no input.
