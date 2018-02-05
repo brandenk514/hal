@@ -5,7 +5,7 @@ import googlespeech
 class Request:
     def __init__(self):
         self.audio = googlespeech.GoogleSpeech()
-        self.response = None
+        self.response = ""
         self.important_content = []
         self.parts_of_speech = []
 

@@ -73,85 +73,11 @@ class Weather:
         else:
             return "Forecast not specified"
 
-    def set_current_forecast(self, weather_data, **keyword_parameters):
-        temp = self.get_current_temperature(weather_data)
-        forecast_type = ""
-        if 'type' in keyword_parameters:
-            forecast_type = keyword_parameters['type']
-        if forecast_type == 'minutely':
-            condition = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return "It looks like it will be " + condition + " with a temperature of " + str(temp)
-        elif forecast_type == 'hourly':
-            condition = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return "It looks like today will be " + condition
-        elif forecast_type == 'daily':
-            conditions = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return conditions
-        elif forecast_type == 'currently':
-            condition = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type=forecast_type))
-            return "It is currently " + condition + " with a temperature of " + str(temp)
-        else:
-            return "Forecast not specified"
-
-    def set_future_forecast(self, weather_data, **keyword_parameters):
-        high_temp = self.get_high_temperature(weather_data)
-        low_temp = self.get_low_temperature(weather_data)
-        time_frame = ""
-        condition = self.formatter.format_weather_conditions(self.get_forecast(weather_data, type="currently"))
-        if 'time_frame' in keyword_parameters:
-            time_frame = keyword_parameters['time_frame']
-        if time_frame == "tomorrow":
-            return "It will be " + condition + " with a high of " + str(high_temp) + "°F and a low of " + str(low_temp)
-        else:
-            time_frame = "The future is cloudy"
-        return time_frame
-
-    def get_weather_at_location(self, location_requested, **keyword_parameters):
-        """
-        Gets the weather for a specific location
-        :param location_requested: A location as a string
-        :return: The forecast as a string
-        """
-        if 'date_offset' in keyword_parameters:
-            date = keyword_parameters['date_offset']
-        else:
-            date = 0
-        if location_requested != "":
-            location_obj = self.location.parse_location_for_coordinates(self.location.get_location(location_requested))
-            weather_obj = self.get_weather_data(location_obj, date_offset=date)
-            if date == 1:
-                return "Tomorrow in " + location_requested.capitalize() + ", " + self.set_future_forecast(
-                    weather_obj, time_frame="tomorrow").lower() + "°F"
-            if location_obj is None:
-                self.set_future_forecast(weather_obj)
-            else:
-                return "In " + location_requested.capitalize() + ", " + self.set_current_forecast(
-                    weather_obj, type="currently").lower() + "°F"
-        else:
-            cur_loc_obj = self.location.parse_location_for_coordinates(self.location.get_location(
-                self.location.get_current_location_from_ip()))
-            weather_obj = self.get_weather_data(cur_loc_obj, date_offset=date)
-            if date == 1:
-                return "Tomorrow, " + self.set_future_forecast(weather_obj, time_frame="tomorrow").lower() + "°F"
-            else:
-                return self.set_current_forecast(weather_obj, type="currently") + "°F"
-
-    def weather_request(self, location_requested, classification):
-        """
-        Handles all weather request from user
-        :param location_requested: An array of strings
-        :param classification: A string from a NaiveBayesClassifier
-        :return: A string of the forecast
-        """
-        forecast = ""
-        if classification == "weather tomorrow":
-            forecast = self.get_weather_at_location(location_requested, date_offset=1)
-        elif classification == "weather":
-            forecast = self.get_weather_at_location(location_requested)
-        return forecast
 
 if __name__ == '__main__':
-    w = Weather()
-    l = location.Location()
-    print(w.get_low_temperature(w.get_weather_data(l.parse_location_for_coordinates(l.get_location(
-        l.get_current_location_from_ip())))))
+    loc = location.Location()
+    l = loc.get_location("Laurel, MD")
+    lat = loc.parse_location_for_coordinates(l)
+    weather = Weather()
+    w = weather.get_weather_data(lat)
+    print(w.currently())
